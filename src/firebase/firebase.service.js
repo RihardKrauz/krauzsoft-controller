@@ -32,4 +32,6 @@ export default class Firebase {
             .collection('sessions')
             .doc(sessionId)
             .get();
+
+    refSession = sessionId => this.store.collection('sessions').doc(sessionId);
 }

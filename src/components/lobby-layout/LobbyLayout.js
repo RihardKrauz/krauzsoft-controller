@@ -1,7 +1,11 @@
 import React from 'react';
 import UserCreatingForm from './UserCreatingForm';
 import TeamMemberList from './TeamMemberList';
-export default class LobbyLayout extends React.Component {
+
+import { connect } from 'react-redux';
+import { setCurrentUser } from '../../store/session.actions';
+
+class LobbyLayout extends React.Component {
     constructor(props) {
         super(props);
 
@@ -18,6 +22,8 @@ export default class LobbyLayout extends React.Component {
             }
         };
 
+        this.unsubscribeSessionStorage = null;
+
         this.setCurrentUser = this.setCurrentUser.bind(this);
         this.joinGame = this.joinGame.bind(this);
         this.setNewUserName = this.setNewUserName.bind(this);
@@ -27,16 +33,23 @@ export default class LobbyLayout extends React.Component {
     }
 
     componentDidMount() {
-        this.props.firebase.getSession(this.props.match.params.id).then(value => {
-            const sessionData = value.data();
-            this.setState({
-                ...sessionData
+        this.unsubscribeSessionStorage = this.props.firebase
+            .refSession(this.props.match.params.id)
+            .onSnapshot(snapshot => {
+                const sessionData = snapshot.data();
+                this.setState({
+                    ...sessionData
+                });
             });
-        });
+    }
+
+    componentWillUnmount() {
+        this.unsubscribeSessionStorage();
     }
 
     setCurrentUser(user) {
         this.setState({ currentUser: user });
+        this.props.dispatch(setCurrentUser(user));
     }
 
     setNewUserName(e) {
@@ -48,31 +61,29 @@ export default class LobbyLayout extends React.Component {
     }
 
     addNewUser(e) {
-        const newUser = { name: this.state.newUser.name };
+        const userChanges = { name: this.state.newUser.name };
+        let teamChanges;
         switch (this.state.newUser.team) {
             case 't1': {
-                this.setState({ team1: [...this.state.team1, newUser] });
+                teamChanges = { team1: [...this.state.team1, userChanges] };
                 break;
             }
             case 't2': {
-                this.setState({ team2: [...this.state.team2, newUser] });
+                teamChanges = { team2: [...this.state.team2, userChanges] };
                 break;
             }
             case 't3': {
-                this.setState({ team3: [...this.state.team3, newUser] });
+                teamChanges = { team3: [...this.state.team3, userChanges] };
                 break;
             }
             default:
                 break;
         }
 
-        this.props.firebase.updateSession(this.props.match.params.id, {
-            team1: [...this.state.team1, newUser],
-            team2: [...this.state.team2, newUser],
-            team3: [...this.state.team3, newUser]
-        });
+        this.setState(teamChanges);
+        this.props.firebase.updateSession(this.props.match.params.id, teamChanges);
 
-        this.setState({ currentUser: newUser });
+        this.setState({ currentUser: userChanges });
     }
 
     toggleUserCreatingContainer(e) {
@@ -115,3 +126,5 @@ export default class LobbyLayout extends React.Component {
         );
     }
 }
+
+export default connect()(LobbyLayout);

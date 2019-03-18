@@ -1,6 +1,8 @@
 import React from 'react';
+import { connect } from 'react-redux';
+import { setCurrentUser } from '../../store/session.actions';
 
-export default class CreateLayout extends React.Component {
+class CreateLayout extends React.Component {
     constructor(props) {
         super(props);
 
@@ -50,11 +52,15 @@ export default class CreateLayout extends React.Component {
 
     joinLobby(e) {
         e.preventDefault();
-        this.props.firebase.updateSession(this.state.newSessionId, {
-            admin: this.state.currentUser,
-            stage: 0
-        });
-        this.props.history.push(`/lobby/${this.state.newSessionId}`);
+        this.props.firebase
+            .updateSession(this.state.newSessionId, {
+                admin: this.state.currentUser,
+                stage: 0
+            })
+            .then(() => {
+                this.props.dispatch(setCurrentUser(this.state.currentUser));
+                this.props.history.push(`/lobby/${this.state.newSessionId}`);
+            });
     }
 
     changeCurrentUser(e) {
@@ -80,3 +86,5 @@ export default class CreateLayout extends React.Component {
         );
     }
 }
+
+export default connect()(CreateLayout);
