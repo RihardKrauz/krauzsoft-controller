@@ -19,7 +19,7 @@ class App extends Component {
                         <Route path="/init" component={InitLayout} />
                         <Route path="/create" component={withFirebaseContext(CreateLayout)} />
                         <Route path="/lobby/:id" component={withFirebaseContext(LobbyLayout)} />
-                        <Route path="/game/:id" component={GameLayout} />
+                        <Route path="/game/:id" component={withFirebaseContext(GameLayout)} />
                     </Switch>
                 </BrowserRouter>
             </div>
