@@ -4,6 +4,7 @@ import TeamMemberList from './TeamMemberList';
 
 import { connect } from 'react-redux';
 import { setCurrentUser } from '../../store/session.actions';
+import storage from '../../store/storage';
 
 class LobbyLayout extends React.Component {
     constructor(props) {
@@ -33,6 +34,7 @@ class LobbyLayout extends React.Component {
     }
 
     componentDidMount() {
+        this.setState({ currentUser: storage.get('currentUser') || { name: '' } });
         this.unsubscribeSessionStorage = this.props.firebase
             .refSession(this.props.match.params.id)
             .onSnapshot(snapshot => {
@@ -44,7 +46,9 @@ class LobbyLayout extends React.Component {
     }
 
     componentWillUnmount() {
-        this.unsubscribeSessionStorage();
+        if (this.unsubscribeSessionStorage instanceof Function) {
+            this.unsubscribeSessionStorage();
+        }
     }
 
     setCurrentUser(user) {
