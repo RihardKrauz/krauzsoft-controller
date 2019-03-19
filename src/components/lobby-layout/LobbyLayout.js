@@ -65,19 +65,19 @@ class LobbyLayout extends React.Component {
     }
 
     addNewUser(e) {
-        const userChanges = { name: this.state.newUser.name };
+        const newUser = { name: this.state.newUser.name };
         let teamChanges;
         switch (this.state.newUser.team) {
             case 't1': {
-                teamChanges = { team1: [...this.state.team1, userChanges] };
+                teamChanges = { team1: [...this.state.team1, newUser] };
                 break;
             }
             case 't2': {
-                teamChanges = { team2: [...this.state.team2, userChanges] };
+                teamChanges = { team2: [...this.state.team2, newUser] };
                 break;
             }
             case 't3': {
-                teamChanges = { team3: [...this.state.team3, userChanges] };
+                teamChanges = { team3: [...this.state.team3, newUser] };
                 break;
             }
             default:
@@ -86,11 +86,11 @@ class LobbyLayout extends React.Component {
 
         this.setState(teamChanges);
         this.props.firebase.updateSession(this.props.match.params.id, teamChanges);
-
-        this.setState({ currentUser: userChanges });
+        this.toggleUserCreatingContainer();
+        this.setCurrentUser(newUser);
     }
 
-    toggleUserCreatingContainer(e) {
+    toggleUserCreatingContainer() {
         this.setState({ isNewUserPanelVisible: !this.state.isNewUserPanelVisible });
     }
 
@@ -104,7 +104,7 @@ class LobbyLayout extends React.Component {
         return (
             <div>
                 <div>Im lobby {this.props.match.params.id}</div>
-                <div onClick={() => this.setCurrentUser(this.state.admin)}>admin: {this.state.admin.name}</div>
+                <div>admin: {this.state.admin.name}</div>
                 <TeamMemberList title="team1" memberList={this.state.team1} onChangeHandler={this.setCurrentUser} />
                 <TeamMemberList title="team2" memberList={this.state.team2} onChangeHandler={this.setCurrentUser} />
                 <TeamMemberList title="team3" memberList={this.state.team3} onChangeHandler={this.setCurrentUser} />

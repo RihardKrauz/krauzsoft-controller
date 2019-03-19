@@ -2,6 +2,10 @@ import React from 'react';
 import { connect } from 'react-redux';
 import storage from '../../store/storage';
 import dayjs from 'dayjs';
+import Logger from './Logger';
+import FalshUsersContainer from './FalshContainer';
+import SuccessUsersContainer from './SuccessUsersContainer';
+import TeamContainer from './TeamContainer';
 
 class GameLayout extends React.Component {
     constructor(props) {
@@ -38,7 +42,11 @@ class GameLayout extends React.Component {
                 this.setState({
                     ...sessionData
                 });
-                if (sessionData.lastActionUser && sessionData.lastActionType) {
+                if (
+                    sessionData.lastActionUser &&
+                    sessionData.lastActionType &&
+                    sessionData.lastActionType !== 'admin'
+                ) {
                     this.logString(
                         sessionData.lastActionUser.name + ' ' + sessionData.stage + ' ' + sessionData.lastActionType
                     );
@@ -51,7 +59,7 @@ class GameLayout extends React.Component {
     }
 
     logString(value) {
-        this.setState({ log: [...this.state.log, value] });
+        this.setState({ log: [...this.state.log, { dt: dayjs(new Date()).format('HH:mm:ss'), msg: value }] });
     }
 
     isCurrentUserAdmin() {
@@ -119,23 +127,15 @@ class GameLayout extends React.Component {
                     <div>Im game {this.props.match.params.id}</div>
                     <div>admin: {this.state.admin.name}</div>
                     <div>
-                        team1:{' '}
-                        {this.state.team1.map(p => (
-                            <div key={p.name}>{p.name}</div>
-                        ))}
+                        <TeamContainer teamName="team1" items={this.state.team1} />
                     </div>
                     <div>
-                        team2:{' '}
-                        {this.state.team2.map(p => (
-                            <div key={p.name}>{p.name}</div>
-                        ))}
+                        <TeamContainer teamName="team2" items={this.state.team2} />
                     </div>
                     <div>
-                        team3:{' '}
-                        {this.state.team3.map(p => (
-                            <div key={p.name}>{p.name}</div>
-                        ))}
+                        <TeamContainer teamName="team3" items={this.state.team3} />
                     </div>
+
                     <div>Current: {this.state.currentUser.name}</div>
                 </div>
                 <div>
@@ -149,32 +149,13 @@ class GameLayout extends React.Component {
                     <div>First answered: {firstAnsweredUser.name}</div>
                 </div>
                 <div>
-                    LOG:
-                    <div>
-                        {this.state.log.map((l, idx) => (
-                            <div key={idx}>{l.msg}</div>
-                        ))}
-                    </div>
+                    <Logger messages={this.state.log} />
                 </div>
                 <div>
-                    FALSH:
-                    <div>
-                        {this.state.falshStart.map((u, idx) => (
-                            <div key={idx}>
-                                {u.name} {dayjs(u.time.toDate()).format('HH:mm:ss')}
-                            </div>
-                        ))}
-                    </div>
+                    <FalshUsersContainer items={this.state.falshStart} />
                 </div>
                 <div>
-                    SUCCESS:
-                    <div>
-                        {this.state.shouldAnswer.map((u, idx) => (
-                            <div key={idx}>
-                                {u.name} {dayjs(u.time.toDate()).format('HH:mm:ss')}
-                            </div>
-                        ))}
-                    </div>
+                    <SuccessUsersContainer items={this.state.shouldAnswer} />
                 </div>
             </div>
         );

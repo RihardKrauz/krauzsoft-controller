@@ -7,7 +7,7 @@ class CreateLayout extends React.Component {
         super(props);
 
         this.state = {
-            newSessionId: '123',
+            newSessionId: '',
             currentUser: { name: '' }
         };
 
