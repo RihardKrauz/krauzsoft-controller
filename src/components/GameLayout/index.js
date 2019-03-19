@@ -1,11 +1,17 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import storage from '../../store/storage';
+import storage, { STORAGE_KEYS } from '../../store/storage';
 import dayjs from 'dayjs';
 import Logger from './Logger';
 import FalshUsersContainer from './FalshContainer';
 import SuccessUsersContainer from './SuccessUsersContainer';
 import TeamContainer from './TeamContainer';
+
+const ACTION_TYPES = Object.freeze({
+    admin: 't1',
+    error: 't2',
+    success: 't3'
+});
 
 class GameLayout extends React.Component {
     constructor(props) {
@@ -32,7 +38,7 @@ class GameLayout extends React.Component {
     }
 
     componentDidMount() {
-        const currentUser = storage.get('currentUser') || { name: '' };
+        const currentUser = storage.get(STORAGE_KEYS.currentUser) || { name: '' };
         this.logString('Welcome, ' + currentUser.name);
         this.setState({ currentUser });
         this.unsubscribeSessionStorage = this.props.firebase
@@ -45,7 +51,7 @@ class GameLayout extends React.Component {
                 if (
                     sessionData.lastActionUser &&
                     sessionData.lastActionType &&
-                    sessionData.lastActionType !== 'admin'
+                    sessionData.lastActionType !== ACTION_TYPES.admin
                 ) {
                     this.logString(
                         sessionData.lastActionUser.name + ' ' + sessionData.stage + ' ' + sessionData.lastActionType
@@ -76,7 +82,7 @@ class GameLayout extends React.Component {
             let sessionData = {
                 stage: newStage,
                 lastActionUser: this.state.currentUser,
-                lastActionType: 'admin'
+                lastActionType: ACTION_TYPES.admin
             };
             if (newStage === 0) {
                 sessionData.falshStart = [];
@@ -88,7 +94,7 @@ class GameLayout extends React.Component {
             const isFalshed = this.state.stage === 0 ? true : false;
             let sessionData = {
                 lastActionUser: this.state.currentUser,
-                lastActionType: isFalshed ? 'error' : 'success'
+                lastActionType: isFalshed ? ACTION_TYPES.error : ACTION_TYPES.success
             };
             if (isFalshed) {
                 sessionData.falshStart = [

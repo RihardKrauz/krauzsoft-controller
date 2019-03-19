@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 const UserCreatingForm = ({ setNewUserNameAction, setNewUserTeamAction, addNewUserAction }) => {
     return (
@@ -18,6 +19,12 @@ const UserCreatingForm = ({ setNewUserNameAction, setNewUserTeamAction, addNewUs
             </div>
         </div>
     );
+};
+
+UserCreatingForm.propTypes = {
+    setNewUserNameAction: PropTypes.func,
+    setNewUserTeamAction: PropTypes.func,
+    addNewUserAction: PropTypes.func
 };
 
 export default UserCreatingForm;

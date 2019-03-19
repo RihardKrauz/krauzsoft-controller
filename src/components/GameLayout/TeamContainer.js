@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 const TeamContainer = ({ teamName, items }) => {
     return (
@@ -9,6 +10,11 @@ const TeamContainer = ({ teamName, items }) => {
             ))}
         </div>
     );
+};
+
+TeamContainer.propTypes = {
+    teamName: PropTypes.string.isRequired,
+    items: PropTypes.array.isRequired
 };
 
 export default TeamContainer;

@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { setCurrentUser } from '../../store/session.actions';
+import { setCurrentUser } from '../../store/session/session.actions';
 
 class CreateLayout extends React.Component {
     constructor(props) {

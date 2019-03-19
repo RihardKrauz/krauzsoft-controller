@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
 import { BrowserRouter, Switch, Route, Redirect } from 'react-router-dom';
-import './App.css';
+import './style.css';
 
-import InitLayout from '../init-layout/InitLayout';
-import CreateLayout from '../create-layout/CreateLayout';
-import LobbyLayout from '../lobby-layout/LobbyLayout';
-import GameLayout from '../game-layout/GameLayout';
+import InitLayout from '../InitLayout';
+import CreateLayout from '../CreateLayout';
+import LobbyLayout from '../LobbyLayout';
+import GameLayout from '../GameLayout';
 
 import { withFirebaseContext } from '../../firebase';
 

@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 const Logger = ({ messages }) => {
     return (
@@ -14,6 +15,10 @@ const Logger = ({ messages }) => {
             </div>
         </div>
     );
+};
+
+Logger.propTypes = {
+    messages: PropTypes.array.isRequired
 };
 
 export default Logger;

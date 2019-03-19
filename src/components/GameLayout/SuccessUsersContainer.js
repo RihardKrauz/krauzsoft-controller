@@ -1,10 +1,11 @@
 import React from 'react';
 import dayjs from 'dayjs';
+import PropTypes from 'prop-types';
 
-const FalshUsersContainer = ({ items }) => {
+const SuccessUsersContainer = ({ items }) => {
     return (
         <div>
-            FALSH:
+            Success:
             <div>
                 {items.map((u, idx) => (
                     <div key={idx}>
@@ -16,4 +17,8 @@ const FalshUsersContainer = ({ items }) => {
     );
 };
 
-export default FalshUsersContainer;
+SuccessUsersContainer.propTypes = {
+    items: PropTypes.array.isRequired
+};
+
+export default SuccessUsersContainer;

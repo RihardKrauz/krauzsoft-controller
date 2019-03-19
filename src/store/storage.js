@@ -1,3 +1,7 @@
+export const STORAGE_KEYS = Object.freeze({
+    currentUser: 'currentUser'
+});
+
 export default {
     get: itemKey => {
         const value = sessionStorage.getItem(itemKey);

@@ -3,8 +3,14 @@ import UserCreatingForm from './UserCreatingForm';
 import TeamMemberList from './TeamMemberList';
 
 import { connect } from 'react-redux';
-import { setCurrentUser } from '../../store/session.actions';
-import storage from '../../store/storage';
+import { setCurrentUser } from '../../store/session/session.actions';
+import storage, { STORAGE_KEYS } from '../../store/storage';
+
+const TEAM_KEYS = Object.freeze({
+    team1: 't1',
+    team2: 't2',
+    team3: 't3'
+});
 
 class LobbyLayout extends React.Component {
     constructor(props) {
@@ -19,7 +25,7 @@ class LobbyLayout extends React.Component {
             isNewUserPanelVisible: false,
             newUser: {
                 name: '',
-                team: 't1'
+                team: TEAM_KEYS.team1
             }
         };
 
@@ -34,7 +40,7 @@ class LobbyLayout extends React.Component {
     }
 
     componentDidMount() {
-        this.setState({ currentUser: storage.get('currentUser') || { name: '' } });
+        this.setState({ currentUser: storage.get(STORAGE_KEYS.currentUser) || { name: '' } });
         this.unsubscribeSessionStorage = this.props.firebase
             .refSession(this.props.match.params.id)
             .onSnapshot(snapshot => {
@@ -68,15 +74,15 @@ class LobbyLayout extends React.Component {
         const newUser = { name: this.state.newUser.name };
         let teamChanges;
         switch (this.state.newUser.team) {
-            case 't1': {
+            case TEAM_KEYS.team1: {
                 teamChanges = { team1: [...this.state.team1, newUser] };
                 break;
             }
-            case 't2': {
+            case TEAM_KEYS.team2: {
                 teamChanges = { team2: [...this.state.team2, newUser] };
                 break;
             }
-            case 't3': {
+            case TEAM_KEYS.team3: {
                 teamChanges = { team3: [...this.state.team3, newUser] };
                 break;
             }

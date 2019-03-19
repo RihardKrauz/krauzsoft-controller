@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 const TeamMemberList = ({ title, memberList, onChangeHandler }) => {
     return (
@@ -11,6 +12,12 @@ const TeamMemberList = ({ title, memberList, onChangeHandler }) => {
             ))}
         </div>
     );
+};
+
+TeamMemberList.propTypes = {
+    title: PropTypes.string.isRequired,
+    memberList: PropTypes.array.isRequired,
+    onChangeHandler: PropTypes.func
 };
 
 export default TeamMemberList;

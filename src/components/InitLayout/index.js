@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default class InitLayout extends React.Component {
+class InitLayout extends React.Component {
     constructor(props) {
         super(props);
 
@@ -45,3 +45,5 @@ export default class InitLayout extends React.Component {
         );
     }
 }
+
+export default InitLayout;
