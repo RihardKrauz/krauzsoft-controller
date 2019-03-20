@@ -1,0 +1,25 @@
+
+
+.players-panel__creator {
+    font-size: 20px;
+    margin-bottom: 1em;
+    border-bottom: dotted 1px #cecece;
+    padding-bottom: 0.2em;
+}
+
+.team-content__user-wrapper.active:after {
+    content: ' <- это вы';
+    color: #999;
+    font-size: 14px;
+}
+
+.team-content__header {
+    font-size: 14px;
+    padding: 0.3em;
+    cursor: pointer;
+}
+
+.team-content__user-wrapper {
+    color: #12019a;
+    cursor: pointer;
+}

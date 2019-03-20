@@ -13,3 +13,9 @@
         justify-content: space-evenly;
     }
 }
+
+.players-panel__creator-name.active:after {
+    content: ' <- это вы';
+    color: #999;
+    font-size: 14px;
+}

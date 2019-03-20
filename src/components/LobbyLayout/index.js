@@ -43,6 +43,8 @@ class LobbyLayout extends React.Component {
         this.addNewUser = this.addNewUser.bind(this);
         this.setTeamName = this.setTeamName.bind(this);
         this.toggleUserCreatingContainer = this.toggleUserCreatingContainer.bind(this);
+        this.onSuccessUserCreatingForm = this.onSuccessUserCreatingForm.bind(this);
+        this.onCloseUserCreatingForm = this.onCloseUserCreatingForm.bind(this);
     }
 
     componentDidMount() {
@@ -83,7 +85,7 @@ class LobbyLayout extends React.Component {
         this.setState({ newUser: { ...this.state.newUser, team: e.target.value } });
     }
 
-    addNewUser(e) {
+    addNewUser() {
         const newUser = { name: this.state.newUser.name };
         let teamChanges;
         switch (this.state.newUser.team) {
@@ -117,6 +119,15 @@ class LobbyLayout extends React.Component {
         e.preventDefault();
 
         this.props.history.push(`/game/${this.props.match.params.id}`);
+    }
+
+    onSuccessUserCreatingForm() {
+        this.addNewUser();
+        this.setState({ isNewUserPanelVisible: false });
+    }
+
+    onCloseUserCreatingForm() {
+        this.setState({ isNewUserPanelVisible: false });
     }
 
     render() {
@@ -167,7 +178,9 @@ class LobbyLayout extends React.Component {
                             <UserCreatingForm
                                 setNewUserNameAction={this.setNewUserName}
                                 setNewUserTeamAction={this.setNewUserTeam}
-                                addNewUserAction={this.addNewUser}
+                                isOpened={this.state.isNewUserPanelVisible}
+                                handleSuccess={this.onSuccessUserCreatingForm}
+                                handleCancel={this.onCloseUserCreatingForm}
                                 userTeamValue={this.state.newUser.team}
                             />
                         </div>

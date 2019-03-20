@@ -9,6 +9,7 @@ import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
+import './style.scss';
 
 const TeamMemberList = ({ title, memberList, onSelectUserAction, onChangeTeamName, currentUser }) => {
     const [open, setOpen] = React.useState(false);
@@ -35,7 +36,7 @@ const TeamMemberList = ({ title, memberList, onSelectUserAction, onChangeTeamNam
         <div className="team-panel-layout">
             <div className="team-content">
                 <div className="team-content__header" onClick={handleClickOpen}>
-                    {title}:
+                    {title}
                 </div>
                 {memberList.map(p => (
                     <div
