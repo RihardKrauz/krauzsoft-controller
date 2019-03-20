@@ -1,0 +1,15 @@
+
+.minor-content {
+    color: #999;
+}
+
+
+.players-panel {
+    display: flex;
+    flex-flow: column;
+
+    &__users {
+        display: flex;
+        justify-content: space-evenly;
+    }
+}

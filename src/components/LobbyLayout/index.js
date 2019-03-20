@@ -1,16 +1,18 @@
 import React from 'react';
-import UserCreatingForm from './UserCreatingForm';
+import UserCreatingForm, { TEAM_KEYS } from './UserCreatingForm';
 import TeamMemberList from './TeamMemberList';
 
 import { connect } from 'react-redux';
 import { setCurrentUser } from '../../store/session/session.actions';
 import storage, { STORAGE_KEYS } from '../../store/storage';
 
-const TEAM_KEYS = Object.freeze({
-    team1: 't1',
-    team2: 't2',
-    team3: 't3'
-});
+import Button from '@material-ui/core/Button';
+import Card from '@material-ui/core/Card';
+import CardActions from '@material-ui/core/CardActions';
+import CardContent from '@material-ui/core/CardContent';
+
+import classNames from 'classnames';
+import './style.scss';
 
 class LobbyLayout extends React.Component {
     constructor(props) {
@@ -21,6 +23,9 @@ class LobbyLayout extends React.Component {
             team1: [],
             team2: [],
             team3: [],
+            team1Name: 'Команда 1',
+            team2Name: 'Команда 2',
+            team3Name: 'Команда 3',
             currentUser: { name: '' },
             isNewUserPanelVisible: false,
             newUser: {
@@ -36,6 +41,7 @@ class LobbyLayout extends React.Component {
         this.setNewUserName = this.setNewUserName.bind(this);
         this.setNewUserTeam = this.setNewUserTeam.bind(this);
         this.addNewUser = this.addNewUser.bind(this);
+        this.setTeamName = this.setTeamName.bind(this);
         this.toggleUserCreatingContainer = this.toggleUserCreatingContainer.bind(this);
     }
 
@@ -60,6 +66,13 @@ class LobbyLayout extends React.Component {
     setCurrentUser(user) {
         this.setState({ currentUser: user });
         this.props.dispatch(setCurrentUser(user));
+    }
+
+    setTeamName(name) {
+        return value => {
+            this.setState({ [name]: value });
+            this.props.firebase.updateSession(this.props.match.params.id, { [name]: value });
+        };
     }
 
     setNewUserName(e) {
@@ -108,31 +121,78 @@ class LobbyLayout extends React.Component {
 
     render() {
         return (
-            <div>
-                <div>Im lobby {this.props.match.params.id}</div>
-                <div>admin: {this.state.admin.name}</div>
-                <TeamMemberList title="team1" memberList={this.state.team1} onChangeHandler={this.setCurrentUser} />
-                <TeamMemberList title="team2" memberList={this.state.team2} onChangeHandler={this.setCurrentUser} />
-                <TeamMemberList title="team3" memberList={this.state.team3} onChangeHandler={this.setCurrentUser} />
-                <div>Current: {this.state.currentUser.name}</div>
-                <div style={{ display: this.state.isNewUserPanelVisible === true ? 'block' : 'none' }}>
-                    <UserCreatingForm
-                        setNewUserNameAction={this.setNewUserName}
-                        setNewUserTeamAction={this.setNewUserTeam}
-                        addNewUserAction={this.addNewUser}
-                    />
-                </div>
-                <div>
-                    <div>
-                        <button onClick={this.toggleUserCreatingContainer}>Cant find me</button>
+            <Card className="card-layout">
+                <CardContent>
+                    <div className="lobby-layout">
+                        <div className="players-panel">
+                            <div className="players-panel__creator">
+                                Создатель:{' '}
+                                <span
+                                    className={classNames(
+                                        this.state.currentUser.name === this.state.admin.name ? 'active' : '',
+                                        'players-panel__creator-name'
+                                    )}
+                                >
+                                    {this.state.admin.name}
+                                </span>
+                            </div>
+                            <div className="players-panel__users">
+                                <TeamMemberList
+                                    title={this.state.team1Name}
+                                    memberList={this.state.team1}
+                                    onSelectUserAction={this.setCurrentUser}
+                                    onChangeTeamName={this.setTeamName('team1Name')}
+                                    currentUser={this.state.currentUser}
+                                />
+                                <TeamMemberList
+                                    title={this.state.team2Name}
+                                    memberList={this.state.team2}
+                                    onSelectUserAction={this.setCurrentUser}
+                                    onChangeTeamName={this.setTeamName('team2Name')}
+                                    currentUser={this.state.currentUser}
+                                />
+                                <TeamMemberList
+                                    title={this.state.team3Name}
+                                    memberList={this.state.team3}
+                                    onSelectUserAction={this.setCurrentUser}
+                                    onChangeTeamName={this.setTeamName('team3Name')}
+                                    currentUser={this.state.currentUser}
+                                />
+                            </div>
+                        </div>
+                        <div
+                            className="user-creating-form-panel"
+                            style={{ display: this.state.isNewUserPanelVisible === true ? 'block' : 'none' }}
+                        >
+                            <UserCreatingForm
+                                setNewUserNameAction={this.setNewUserName}
+                                setNewUserTeamAction={this.setNewUserTeam}
+                                addNewUserAction={this.addNewUser}
+                                userTeamValue={this.state.newUser.team}
+                            />
+                        </div>
                     </div>
-                    <div>
-                        <button onClick={this.joinGame} disabled={this.state.currentUser.name === ''}>
-                            Go to game
-                        </button>
-                    </div>
-                </div>
-            </div>
+                </CardContent>
+                <CardActions className="card-actions-panel">
+                    <Button
+                        variant="outlined"
+                        color="default"
+                        className="user-creating-form__action-btn"
+                        onClick={this.toggleUserCreatingContainer}
+                    >
+                        Создать игрока
+                    </Button>
+                    <Button
+                        variant="outlined"
+                        color="primary"
+                        className="user-creating-form__action-btn"
+                        disabled={this.state.currentUser.name === ''}
+                        onClick={this.joinGame}
+                    >
+                        К игре
+                    </Button>
+                </CardActions>
+            </Card>
         );
     }
 }

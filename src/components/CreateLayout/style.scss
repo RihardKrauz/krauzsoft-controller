@@ -1,0 +1,33 @@
+.session-creating-layout {
+    display: flex;
+    flex-flow: column;
+}
+
+.session-generator {
+    margin-top: 1em;
+    display: inline-block;
+    padding-top: 1em;
+
+    &__key {
+        font-size: 33px;
+    font-weight: bold;
+    padding: 0.2em;
+    margin: 0.2em;
+    }
+
+    &__action-wrapper {
+        padding-top: 1.3em;
+        margin-left: 1em;
+    }
+}
+
+.creating-form {
+    display: inline-block;
+
+    &__action-wrapper {
+        padding-top: 1.8em;
+        margin-left: 1.5em;
+        display: inline-block;
+    }
+}
+

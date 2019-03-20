@@ -1,6 +1,11 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { setCurrentUser } from '../../store/session/session.actions';
+import TextField from '@material-ui/core/TextField';
+import Button from '@material-ui/core/Button';
+import Card from '@material-ui/core/Card';
+import CardContent from '@material-ui/core/CardContent';
+import './style.scss';
 
 class CreateLayout extends React.Component {
     constructor(props) {
@@ -24,6 +29,7 @@ class CreateLayout extends React.Component {
     }
 
     copySessionId(e) {
+        // todo: extract to utils
         const selectText = element => {
             let doc = document,
                 textEl = element,
@@ -69,22 +75,83 @@ class CreateLayout extends React.Component {
 
     render() {
         return (
-            <div>
-                <div>
-                    <div id="new-session-id">{this.state.newSessionId}</div>
-                    <div>
-                        <button onClick={this.copySessionId}>Copy</button>
+            <Card className="card-layout">
+                <CardContent>
+                    <div className="session-creating-layout">
+                        <div className="session-generator">
+                            <span className="session-generator__key" id="new-session-id">
+                                {this.state.newSessionId}
+                            </span>
+                            <div className="session-generator__action-wrapper">
+                                <Button
+                                    color="default"
+                                    className="session-generator__action-btn"
+                                    onClick={this.copySessionId}
+                                >
+                                    Скопировать
+                                </Button>
+                            </div>
+                        </div>
+                        <div className="creating-form">
+                            <TextField
+                                id="admin-name-input"
+                                label="Ваше имя"
+                                className="creating-form__field-input"
+                                onChange={this.changeCurrentUser}
+                                margin="normal"
+                            />
+                            <div className="creating-form__action-wrapper">
+                                <Button
+                                    variant="outlined"
+                                    color="primary"
+                                    className="creating-form__action-btn"
+                                    onClick={this.joinLobby}
+                                >
+                                    Создать
+                                </Button>
+                            </div>
+                        </div>
                     </div>
-                </div>
-                <div>
-                    <input onChange={this.changeCurrentUser} />
-                    <div>
-                        <button onClick={this.joinLobby}>Join</button>
-                    </div>
-                </div>
-            </div>
+                </CardContent>
+            </Card>
         );
     }
 }
+
+/**
+ 
+<div className="session-creating-layout">
+                <div className="session-generator">
+                    <span className="session-generator__key" id="new-session-id">
+                        {this.state.newSessionId}
+                    </span>
+                    <div className="session-generator__action-wrapper">
+                        <Button color="default" className="session-generator__action-btn" onClick={this.copySessionId}>
+                            Скопировать
+                        </Button>
+                    </div>
+                </div>
+                <div className="creating-form">
+                    <TextField
+                        id="admin-name-input"
+                        label="Ваше имя"
+                        className="creating-form__field-input"
+                        onChange={this.changeCurrentUser}
+                        margin="normal"
+                    />
+                    <div className="creating-form__action-wrapper">
+                        <Button
+                            variant="outlined"
+                            color="primary"
+                            className="creating-form__action-btn"
+                            onClick={this.joinLobby}
+                        >
+                            Создать
+                        </Button>
+                    </div>
+                </div>
+            </div>
+ 
+ */
 
 export default connect()(CreateLayout);
