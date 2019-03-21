@@ -31,6 +31,12 @@
   margin: 1em;
 }
 
+.card-tight {
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 @keyframes App-logo-spin {
   from {
     transform: rotate(0deg);

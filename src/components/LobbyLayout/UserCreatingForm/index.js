@@ -1,5 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+
+import './style.scss';
+
 import MenuItem from '@material-ui/core/MenuItem';
 import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
@@ -30,16 +33,7 @@ const UserCreatingForm = ({
             <DialogTitle id="form-dialog-title">Добавить пользователя</DialogTitle>
             <DialogContent>
                 <form className="user-creating-form" autoComplete="off">
-                    <FormControl className="user-creating-form__field">
-                        <TextField
-                            id="user-name-input"
-                            label="Ваше имя"
-                            className="user-creating-form__field-input"
-                            onChange={setNewUserNameAction}
-                            margin="normal"
-                        />
-                    </FormControl>
-                    <FormControl className="user-creating-form__field">
+                    <FormControl required className="user-creating-form__field">
                         <InputLabel htmlFor="team-select-el">Команда</InputLabel>
                         <Select
                             onChange={setNewUserTeamAction}
@@ -53,6 +47,16 @@ const UserCreatingForm = ({
                             <MenuItem value={TEAM_KEYS.team2}>Команда 2</MenuItem>
                             <MenuItem value={TEAM_KEYS.team3}>Команда 3</MenuItem>
                         </Select>
+                    </FormControl>
+                    <FormControl className="user-creating-form__field">
+                        <TextField
+                            id="user-name-input"
+                            label="Ваше имя"
+                            className="user-creating-form__field-input"
+                            onChange={setNewUserNameAction}
+                            margin="normal"
+                            required
+                        />
                     </FormControl>
                 </form>
             </DialogContent>

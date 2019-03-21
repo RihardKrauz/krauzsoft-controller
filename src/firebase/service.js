@@ -34,4 +34,10 @@ export default class Firebase {
             .get();
 
     refSession = sessionId => this.store.collection('sessions').doc(sessionId);
+
+    getSecurityKey = pass =>
+        this.store
+            .collection('admin')
+            .where('key', '==', pass)
+            .get();
 }

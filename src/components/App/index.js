@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { BrowserRouter, Switch, Route, Redirect } from 'react-router-dom';
+import ProtectedRoute from '../ProtectedRoute';
 import './style.css';
 
 import InitLayout from '../InitLayout';
@@ -30,10 +31,10 @@ class App extends Component {
                     <BrowserRouter>
                         <Switch>
                             <Redirect exact from="/" to="init" />
-                            <Route path="/init" component={InitLayout} />
-                            <Route path="/create" component={withFirebaseContext(CreateLayout)} />
-                            <Route path="/lobby/:id" component={withFirebaseContext(LobbyLayout)} />
-                            <Route path="/game/:id" component={withFirebaseContext(GameLayout)} />
+                            <Route path="/init" component={withFirebaseContext(InitLayout)} />
+                            <ProtectedRoute path="/create" component={withFirebaseContext(CreateLayout)} />
+                            <ProtectedRoute path="/lobby/:id" component={withFirebaseContext(LobbyLayout)} />
+                            <ProtectedRoute path="/game/:id" component={withFirebaseContext(GameLayout)} />
                         </Switch>
                     </BrowserRouter>
                 </div>

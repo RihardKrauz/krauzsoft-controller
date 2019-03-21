@@ -1,5 +1,6 @@
 export const STORAGE_KEYS = Object.freeze({
-    currentUser: 'currentUser'
+    currentUser: 'currentUser',
+    securityKey: 'securityKey'
 });
 
 export default {

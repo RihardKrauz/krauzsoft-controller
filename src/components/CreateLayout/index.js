@@ -1,10 +1,13 @@
 import React from 'react';
 import { connect } from 'react-redux';
+import PropTypes from 'prop-types';
+
 import { setCurrentUser } from '../../store/session/session.actions';
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
+import { SnackbarProvider, withSnackbar } from 'notistack';
 import './style.scss';
 
 class CreateLayout extends React.Component {
@@ -12,7 +15,7 @@ class CreateLayout extends React.Component {
         super(props);
 
         this.state = {
-            newSessionId: '',
+            newSessionId: 'Загрузка...',
             currentUser: { name: '' }
         };
 
@@ -25,7 +28,10 @@ class CreateLayout extends React.Component {
         this.props.firebase
             .addSession()
             .then(docRef => this.setState({ newSessionId: docRef.id }))
-            .catch(err => console.error(err));
+            .catch(err => {
+                console.error(err);
+                this.props.enqueueSnackbar(err, { variant: 'error' });
+            });
     }
 
     copySessionId(e) {
@@ -66,6 +72,10 @@ class CreateLayout extends React.Component {
             .then(() => {
                 this.props.dispatch(setCurrentUser(this.state.currentUser));
                 this.props.history.push(`/lobby/${this.state.newSessionId}`);
+            })
+            .catch(err => {
+                console.error(err);
+                this.props.enqueueSnackbar(err, { variant: 'error' });
             });
     }
 
@@ -75,7 +85,7 @@ class CreateLayout extends React.Component {
 
     render() {
         return (
-            <Card className="card-layout">
+            <Card className="card-layout card-tight">
                 <CardContent>
                     <div className="session-creating-layout">
                         <div className="session-generator">
@@ -105,6 +115,7 @@ class CreateLayout extends React.Component {
                                     variant="outlined"
                                     color="primary"
                                     className="creating-form__action-btn"
+                                    disabled={this.state.currentUser.name === ''}
                                     onClick={this.joinLobby}
                                 >
                                     Создать
@@ -118,40 +129,18 @@ class CreateLayout extends React.Component {
     }
 }
 
-/**
- 
-<div className="session-creating-layout">
-                <div className="session-generator">
-                    <span className="session-generator__key" id="new-session-id">
-                        {this.state.newSessionId}
-                    </span>
-                    <div className="session-generator__action-wrapper">
-                        <Button color="default" className="session-generator__action-btn" onClick={this.copySessionId}>
-                            Скопировать
-                        </Button>
-                    </div>
-                </div>
-                <div className="creating-form">
-                    <TextField
-                        id="admin-name-input"
-                        label="Ваше имя"
-                        className="creating-form__field-input"
-                        onChange={this.changeCurrentUser}
-                        margin="normal"
-                    />
-                    <div className="creating-form__action-wrapper">
-                        <Button
-                            variant="outlined"
-                            color="primary"
-                            className="creating-form__action-btn"
-                            onClick={this.joinLobby}
-                        >
-                            Создать
-                        </Button>
-                    </div>
-                </div>
-            </div>
- 
- */
+CreateLayout.propTypes = {
+    enqueueSnackbar: PropTypes.func.isRequired
+};
 
-export default connect()(CreateLayout);
+const CreatingLayoutWithSnackbar = withSnackbar(CreateLayout);
+
+const IntegrationNotistack = props => {
+    return (
+        <SnackbarProvider maxSnack={3}>
+            <CreatingLayoutWithSnackbar {...props} />
+        </SnackbarProvider>
+    );
+};
+
+export default connect()(IntegrationNotistack);
