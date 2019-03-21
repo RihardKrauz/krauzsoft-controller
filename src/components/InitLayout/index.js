@@ -1,11 +1,14 @@
 import React from 'react';
 import storage, { STORAGE_KEYS } from '../../store/storage';
+import PropTypes from 'prop-types';
 
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
 import Card from '@material-ui/core/Card';
 import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
+
+import { SnackbarProvider, withSnackbar } from 'notistack';
 
 import './style.scss';
 
@@ -53,6 +56,8 @@ class InitLayout extends React.Component {
                 const key = snapshot.docs[0].id;
                 storage.set(STORAGE_KEYS.securityKey, key);
                 action();
+            } else {
+                this.props.enqueueSnackbar('Неверный ключ безопасности! Спросите его у Krauz`а.', { variant: 'error' });
             }
         });
     }
@@ -105,4 +110,18 @@ class InitLayout extends React.Component {
     }
 }
 
-export default InitLayout;
+InitLayout.propTypes = {
+    enqueueSnackbar: PropTypes.func.isRequired
+};
+
+const InitLayoutWithSnackbar = withSnackbar(InitLayout);
+
+const IntegrationNotistack = props => {
+    return (
+        <SnackbarProvider maxSnack={3}>
+            <InitLayoutWithSnackbar {...props} />
+        </SnackbarProvider>
+    );
+};
+
+export default IntegrationNotistack;

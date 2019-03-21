@@ -1,6 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import storage, { STORAGE_KEYS } from '../../store/storage';
+import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import dayjs from 'dayjs';
 import Logger from './Logger';
@@ -63,33 +64,42 @@ class GameLayout extends React.Component {
         const currentUser = storage.get(STORAGE_KEYS.currentUser) || { name: '' };
         this.logString('Приветствуем тебя, ' + currentUser.name);
         this.setState({ currentUser });
-        this.unsubscribeSessionStorage = this.props.firebase
-            .refSession(this.props.match.params.id)
-            .onSnapshot(snapshot => {
-                const sessionData = snapshot.data();
-                this.setState({
-                    ...sessionData
-                });
-                if (
-                    sessionData.lastActionUser &&
-                    sessionData.lastActionType &&
-                    sessionData.lastActionType !== ACTION_TYPES.admin
-                ) {
-                    const resultMessage =
-                        sessionData.lastActionType === ACTION_TYPES.error ? 'слишком поспешил' : 'готов отвечать';
-                    this.logString(`${sessionData.lastActionUser.name} ${resultMessage}`);
-                }
+        try {
+            this.unsubscribeSessionStorage = this.props.firebase
+                .refSession(this.props.match.params.id)
+                .onSnapshot(snapshot => {
+                    const sessionData = snapshot.data();
+                    this.setState({
+                        ...sessionData
+                    });
+                    if (
+                        sessionData.lastActionUser &&
+                        sessionData.lastActionType &&
+                        sessionData.lastActionType !== ACTION_TYPES.admin
+                    ) {
+                        const resultMessage =
+                            sessionData.lastActionType === ACTION_TYPES.error ? 'слишком поспешил' : 'готов отвечать';
+                        this.logString(`${sessionData.lastActionUser.name} ${resultMessage}`);
+                    }
 
-                if (sessionData.lastActionType === ACTION_TYPES.admin) {
-                    this.logString(
-                        sessionData.stage === 0 ? `Внимательно слушаем вопрос от ${this.state.admin.name}` : 'Отвечаем!'
-                    );
-                }
-            });
+                    if (sessionData.lastActionType === ACTION_TYPES.admin) {
+                        this.logString(
+                            sessionData.stage === 0
+                                ? `Внимательно слушаем вопрос от ${this.state.admin.name}`
+                                : 'Отвечаем!'
+                        );
+                    }
+                });
+        } catch (err) {
+            console.error(err);
+            this.props.enqueueSnackbar(err, { variant: 'error' });
+        }
     }
 
     componentWillUnmount() {
-        this.unsubscribeSessionStorage();
+        if (this.unsubscribeSessionStorage instanceof Function) {
+            this.unsubscribeSessionStorage();
+        }
     }
 
     logString(value) {
@@ -133,7 +143,10 @@ class GameLayout extends React.Component {
                 sessionData.shouldAnswer = [];
             }
 
-            this.props.firebase.updateSession(this.props.match.params.id, sessionData);
+            this.props.firebase.updateSession(this.props.match.params.id, sessionData).catch(err => {
+                console.error(err);
+                this.props.enqueueSnackbar(err, { variant: 'error' });
+            });
         } else {
             const isFalshed = this.state.stage === 0 ? true : false;
             let sessionData = {
@@ -152,7 +165,10 @@ class GameLayout extends React.Component {
                 ];
             }
             if (this.state.falshStart.filter(u => u.name === this.state.currentUser.name).length === 0) {
-                this.props.firebase.updateSession(this.props.match.params.id, sessionData);
+                this.props.firebase.updateSession(this.props.match.params.id, sessionData).catch(err => {
+                    console.error(err);
+                    this.props.enqueueSnackbar(err, { variant: 'error' });
+                });
             } else {
                 this.logString(`${this.state.currentUser.name}, ты тыкнул раньше времени. Жди следующего раунда`);
             }
@@ -270,6 +286,10 @@ class GameLayout extends React.Component {
         );
     }
 }
+
+GameLayout.propTypes = {
+    enqueueSnackbar: PropTypes.func.isRequired
+};
 
 const GameLayoutWithSnackbar = withSnackbar(GameLayout);
 

@@ -69,3 +69,15 @@
     margin-bottom: 0.5em;
     padding-bottom: 0.2em;
 }
+
+.tgdk-btn {
+    min-width: 170px !important; 
+}
+
+
+@media all and (min-width:0px) and (max-width: 410px) {
+    .tgdk-btn {
+        min-width: 120px !important; 
+    }
+  }
+
