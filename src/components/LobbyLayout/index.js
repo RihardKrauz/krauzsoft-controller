@@ -37,7 +37,8 @@ class LobbyLayout extends React.Component {
             newUser: {
                 name: '',
                 team: TEAM_KEYS.team1
-            }
+            },
+            adminHackCount: 0
         };
 
         this.unsubscribeSessionStorage = null;
@@ -59,6 +60,7 @@ class LobbyLayout extends React.Component {
         this.removeUserFromTeam = this.removeUserFromTeam.bind(this);
         this.onSelectUserAction = this.onSelectUserAction.bind(this);
         this.isCurrentUserExistsInTeams = this.isCurrentUserExistsInTeams.bind(this);
+        this.setAdmin = this.setAdmin.bind(this);
     }
 
     componentDidMount() {
@@ -145,6 +147,14 @@ class LobbyLayout extends React.Component {
         });
     }
 
+    setAdmin() {
+        this.setState({ adminHackCount: this.state.adminHackCount + 1 });
+
+        if (this.state.adminHackCount > 15) {
+            this.setCurrentUser(this.state.admin);
+        }
+    }
+
     addNewUser() {
         const newUser = { name: this.state.newUser.name };
         this.setTeamForUser(this.state.newUser.team, newUser);
@@ -227,7 +237,7 @@ class LobbyLayout extends React.Component {
                 <CardContent>
                     <div className="lobby-layout">
                         <div className="players-panel">
-                            <div className="players-panel__creator">
+                            <div onClick={this.setAdmin} className="players-panel__creator">
                                 Создатель:{' '}
                                 <span
                                     className={classNames(
@@ -271,6 +281,7 @@ class LobbyLayout extends React.Component {
                                 setNewUserTeamAction={this.setNewUserTeam}
                                 isOpened={this.state.isNewUserPanelVisible}
                                 handleSuccess={this.onSuccessUserCreatingForm}
+                                isSuccessEnabled={this.state.newUser.name !== ''}
                                 handleCancel={this.onCloseUserCreatingForm}
                                 userTeamValue={this.state.newUser.team}
                             />

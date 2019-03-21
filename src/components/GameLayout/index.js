@@ -151,8 +151,11 @@ class GameLayout extends React.Component {
                     { name: this.state.currentUser.name, time: new Date() }
                 ];
             }
-
-            this.props.firebase.updateSession(this.props.match.params.id, sessionData);
+            if (this.state.falshStart.filter(u => u.name === this.state.currentUser.name).length === 0) {
+                this.props.firebase.updateSession(this.props.match.params.id, sessionData);
+            } else {
+                this.logString(`${this.state.currentUser.name}, ты тыкнул раньше времени. Жди следующего раунда`);
+            }
         }
     }
 
@@ -164,9 +167,7 @@ class GameLayout extends React.Component {
         }
 
         let tdgButtonStyle = 'primary';
-        // if (this.state.currentUser.name === this.state.admin.name) {
         tdgButtonStyle = this.state.stage === 0 ? 'secondary' : 'primary';
-        // }
 
         return (
             <Card className="card-layout">

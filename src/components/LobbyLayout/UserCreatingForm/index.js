@@ -26,7 +26,8 @@ const UserCreatingForm = ({
     handleSuccess,
     setNewUserNameAction,
     setNewUserTeamAction,
-    userTeamValue
+    userTeamValue,
+    isSuccessEnabled
 }) => {
     return (
         <Dialog open={isOpened} onClose={handleCancel} aria-labelledby="form-dialog-title">
@@ -64,7 +65,7 @@ const UserCreatingForm = ({
                 <Button onClick={handleCancel} color="primary">
                     Отмена
                 </Button>
-                <Button onClick={handleSuccess} color="primary">
+                <Button onClick={handleSuccess} color="primary" disabled={isSuccessEnabled === false}>
                     Создать
                 </Button>
             </DialogActions>
@@ -78,7 +79,8 @@ UserCreatingForm.propTypes = {
     userTeamValue: PropTypes.string.isRequired,
     isOpened: PropTypes.bool,
     handleCancel: PropTypes.func,
-    handleSuccess: PropTypes.func
+    handleSuccess: PropTypes.func,
+    isSuccessEnabled: PropTypes.bool
 };
 
 export default UserCreatingForm;
