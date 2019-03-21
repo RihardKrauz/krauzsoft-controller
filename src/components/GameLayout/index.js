@@ -261,47 +261,6 @@ class GameLayout extends React.Component {
     }
 }
 
-/* 
-
-<div>
-                <div>
-                    <div>Im game {this.props.match.params.id}</div>
-                    <div>admin: {this.state.admin.name}</div>
-                    <div>
-                        <TeamContainer teamName="team1" items={this.state.team1} />
-                    </div>
-                    <div>
-                        <TeamContainer teamName="team2" items={this.state.team2} />
-                    </div>
-                    <div>
-                        <TeamContainer teamName="team3" items={this.state.team3} />
-                    </div>
-
-                    <div>Current: {this.state.currentUser.name}</div>
-                </div>
-                <div>
-                    <div>
-                        <button onClick={this.onTygydyk}>TYGYDYK</button>
-                    </div>
-                    <div>Stage: {this.state.stage}</div>
-                    <div>{stageDescription}</div>
-                </div>
-                <div>
-                    <div>First answered: {firstAnsweredUser.name}</div>
-                </div>
-                <div>
-                    <Logger messages={this.state.log} />
-                </div>
-                <div>
-                    <FalshUsersContainer items={this.state.falshStart} />
-                </div>
-                <div>
-                    <SuccessUsersContainer items={this.state.shouldAnswer} />
-                </div>
-            </div>
-
-*/
-
 const GameLayoutWithSnackbar = withSnackbar(GameLayout);
 
 const IntegrationNotistack = props => {
