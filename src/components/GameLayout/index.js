@@ -158,6 +158,15 @@ class GameLayout extends React.Component {
 
     render() {
         const firstAnsweredUser = this.getFirstAnsweredUser();
+        let tgdButtonName = 'ТЫГЫДЫК';
+        if (this.state.currentUser.name === this.state.admin.name) {
+            tgdButtonName = this.state.stage === 0 ? 'Жду ответ' : 'Читать вопрос';
+        }
+
+        let tdgButtonStyle = 'primary';
+        // if (this.state.currentUser.name === this.state.admin.name) {
+        tdgButtonStyle = this.state.stage === 0 ? 'secondary' : 'primary';
+        // }
 
         return (
             <Card className="card-layout">
@@ -182,14 +191,14 @@ class GameLayout extends React.Component {
                                             onMouseOver={this.setActionBtnHoverEnabled}
                                             onMouseOut={this.setActionBtnHoverDisabled}
                                             className="tgdk-btn"
-                                            color="primary"
+                                            color={tdgButtonStyle}
                                         >
                                             {this.state.actionBtnHovered === true ? (
                                                 <ActiveBtnIcon className="tgdk-btn-icon" />
                                             ) : (
                                                 <PassiveBtnIcon className="tgdk-btn-icon" />
                                             )}
-                                            ТЫГЫДЫК
+                                            {tgdButtonName}
                                         </Fab>
                                     </div>
                                 </div>
