@@ -1,11 +1,26 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import storage, { STORAGE_KEYS } from '../../store/storage';
+import classNames from 'classnames';
 import dayjs from 'dayjs';
 import Logger from './Logger';
-import FalshUsersContainer from './FalshContainer';
-import SuccessUsersContainer from './SuccessUsersContainer';
+import ResultsContainer from './ResultsContainer';
 import TeamContainer from './TeamContainer';
+
+import ExpansionPanel from '@material-ui/core/ExpansionPanel';
+import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
+import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
+import Typography from '@material-ui/core/Typography';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+
+import Card from '@material-ui/core/Card';
+import CardContent from '@material-ui/core/CardContent';
+import Fab from '@material-ui/core/Fab';
+import PassiveBtnIcon from '@material-ui/icons/Accessibility';
+import ActiveBtnIcon from '@material-ui/icons/AccessibilityNew';
+import { SnackbarProvider, withSnackbar } from 'notistack';
+
+import './style.scss';
 
 const ACTION_TYPES = Object.freeze({
     admin: 't1',
@@ -22,24 +37,31 @@ class GameLayout extends React.Component {
             team1: [],
             team2: [],
             team3: [],
+            team1Name: 'Команда 1',
+            team2Name: 'Команда 2',
+            team3Name: 'Команда 3',
             stage: 0,
             log: [],
             currentUser: { name: '' },
             lastActionUser: { name: '' },
             lastActionType: '',
             falshStart: [],
-            shouldAnswer: []
+            shouldAnswer: [],
+            actionBtnHovered: false
         };
 
         this.unsubscribeSessionStorage = null;
         this.logString = this.logString.bind(this);
         this.onTygydyk = this.onTygydyk.bind(this);
         this.isCurrentUserAdmin = this.isCurrentUserAdmin.bind(this);
+        this.setActionBtnHoverEnabled = this.setActionBtnHoverEnabled.bind(this);
+        this.setActionBtnHoverDisabled = this.setActionBtnHoverDisabled.bind(this);
+        this.getTeamByUser = this.getTeamByUser.bind(this);
     }
 
     componentDidMount() {
         const currentUser = storage.get(STORAGE_KEYS.currentUser) || { name: '' };
-        this.logString('Welcome, ' + currentUser.name);
+        this.logString('Приветствуем тебя, ' + currentUser.name);
         this.setState({ currentUser });
         this.unsubscribeSessionStorage = this.props.firebase
             .refSession(this.props.match.params.id)
@@ -53,8 +75,14 @@ class GameLayout extends React.Component {
                     sessionData.lastActionType &&
                     sessionData.lastActionType !== ACTION_TYPES.admin
                 ) {
+                    const resultMessage =
+                        sessionData.lastActionType === ACTION_TYPES.error ? 'слишком поспешил' : 'готов отвечать';
+                    this.logString(`${sessionData.lastActionUser.name} ${resultMessage}`);
+                }
+
+                if (sessionData.lastActionType === ACTION_TYPES.admin) {
                     this.logString(
-                        sessionData.lastActionUser.name + ' ' + sessionData.stage + ' ' + sessionData.lastActionType
+                        sessionData.stage === 0 ? `Внимательно слушаем вопрос от ${this.state.admin.name}` : 'Отвечаем!'
                     );
                 }
             });
@@ -73,7 +101,23 @@ class GameLayout extends React.Component {
     }
 
     getFirstAnsweredUser() {
-        return this.state.shouldAnswer.sort((a, b) => a.time.seconds - b.time.seconds)[0] || { name: 'none' };
+        return this.state.shouldAnswer.sort((a, b) => a.time.seconds - b.time.seconds)[0] || { name: 'пока никто' };
+    }
+
+    setActionBtnHoverEnabled() {
+        this.setState({ actionBtnHovered: true });
+    }
+
+    setActionBtnHoverDisabled() {
+        this.setState({ actionBtnHovered: false });
+    }
+
+    getTeamByUser(user) {
+        if (!user) return '';
+        if (this.state.team1.filter(u => u.name === user.name).length > 0) return this.state.team1Name;
+        if (this.state.team2.filter(u => u.name === user.name).length > 0) return this.state.team2Name;
+        if (this.state.team3.filter(u => u.name === user.name).length > 0) return this.state.team3Name;
+        return '';
     }
 
     onTygydyk(e) {
@@ -113,22 +157,113 @@ class GameLayout extends React.Component {
     }
 
     render() {
-        let stageDescription;
-        switch (this.state.stage) {
-            case 0:
-                stageDescription = 'Admin is reading';
-                break;
-            case 1:
-                stageDescription = 'Waiting for answer...';
-                break;
-            default:
-                stageDescription = 'unknown';
-        }
-
         const firstAnsweredUser = this.getFirstAnsweredUser();
 
         return (
-            <div>
+            <Card className="card-layout">
+                <CardContent>
+                    <div className="game-panel">
+                        <div className="stage-container">
+                            <div className="stage-container__falshed-users">
+                                <ResultsContainer title="Поспешили:" items={this.state.falshStart} />
+                            </div>
+                            <div className="stage-container__action-panel">
+                                <div className="stage-container__action-wrapper">
+                                    <div
+                                        className={classNames(
+                                            'stage-container__action-btn',
+                                            this.state.stage === 0 ? 'inactive' : 'active'
+                                        )}
+                                    >
+                                        <Fab
+                                            variant="extended"
+                                            aria-label="TYGYDYK"
+                                            onClick={this.onTygydyk}
+                                            onMouseOver={this.setActionBtnHoverEnabled}
+                                            onMouseOut={this.setActionBtnHoverDisabled}
+                                            className="tgdk-btn"
+                                            color="primary"
+                                        >
+                                            {this.state.actionBtnHovered === true ? (
+                                                <ActiveBtnIcon className="tgdk-btn-icon" />
+                                            ) : (
+                                                <PassiveBtnIcon className="tgdk-btn-icon" />
+                                            )}
+                                            ТЫГЫДЫК
+                                        </Fab>
+                                    </div>
+                                </div>
+                                <div className="stage-container__user-answering">
+                                    Отвечает:{' '}
+                                    <span className="stage-container__user-answering-team">
+                                        {this.getTeamByUser(firstAnsweredUser)}
+                                    </span>
+                                    <span className="stage-container__user-answering-value">
+                                        ({firstAnsweredUser.name})
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div className="stage-container__success-users">
+                                <ResultsContainer title="Молодцы:" items={this.state.shouldAnswer} />
+                            </div>
+                        </div>
+                        <div className="log-layout">
+                            <Logger messages={this.state.log} />
+                        </div>
+                        <div className="info-panel">
+                            <ExpansionPanel>
+                                <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+                                    <Typography className="log-panel__title">Команды</Typography>
+                                </ExpansionPanelSummary>
+                                <ExpansionPanelDetails>
+                                    <div className="game-panel__teams-info">
+                                        <div className="game-panel__creator">
+                                            Создатель:{' '}
+                                            <span
+                                                className={classNames(
+                                                    this.state.currentUser.name === this.state.admin.name
+                                                        ? 'active'
+                                                        : '',
+                                                    'game-panel__creator-name'
+                                                )}
+                                            >
+                                                {this.state.admin.name}
+                                            </span>
+                                        </div>
+                                        <div className="game-panel__teams">
+                                            <TeamContainer
+                                                teamName={this.state.team1Name}
+                                                items={this.state.team1}
+                                                currentUser={this.state.currentUser}
+                                            />
+
+                                            <TeamContainer
+                                                teamName={this.state.team2Name}
+                                                items={this.state.team2}
+                                                currentUser={this.state.currentUser}
+                                            />
+
+                                            <TeamContainer
+                                                teamName={this.state.team3Name}
+                                                items={this.state.team3}
+                                                currentUser={this.state.currentUser}
+                                            />
+                                        </div>
+                                    </div>
+                                </ExpansionPanelDetails>
+                            </ExpansionPanel>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+        );
+    }
+}
+
+/* 
+
+<div>
                 <div>
                     <div>Im game {this.props.match.params.id}</div>
                     <div>admin: {this.state.admin.name}</div>
@@ -164,8 +299,17 @@ class GameLayout extends React.Component {
                     <SuccessUsersContainer items={this.state.shouldAnswer} />
                 </div>
             </div>
-        );
-    }
-}
 
-export default connect(state => ({ currentUser: state.session.currentUser || { name: '' } }))(GameLayout);
+*/
+
+const GameLayoutWithSnackbar = withSnackbar(GameLayout);
+
+const IntegrationNotistack = props => {
+    return (
+        <SnackbarProvider maxSnack={3}>
+            <GameLayoutWithSnackbar {...props} />
+        </SnackbarProvider>
+    );
+};
+
+export default connect(state => ({ currentUser: state.session.currentUser || { name: '' } }))(IntegrationNotistack);

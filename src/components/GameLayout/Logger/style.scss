@@ -1,0 +1,18 @@
+.log-panel__messages {
+    display: flex;
+    flex-flow: column;
+    max-height: 400px;
+    overflow-y: scroll;
+    width: 100%;
+}
+
+.log-panel__message-item {
+    text-align: start;
+    padding: 0.2em;
+    font-size: 12px;
+}
+
+.log-panel__message-time {
+    color: #999;
+    padding-right: 8px;
+}

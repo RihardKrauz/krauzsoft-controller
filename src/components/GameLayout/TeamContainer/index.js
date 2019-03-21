@@ -1,12 +1,19 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import classNames from 'classnames';
+import './style.scss';
 
-const TeamContainer = ({ teamName, items }) => {
+const TeamContainer = ({ teamName, items, currentUser }) => {
     return (
-        <div>
-            {teamName}
+        <div className="users-container">
+            <div className="users-container__header">{teamName}</div>
             {items.map(p => (
-                <div key={p.name}>{p.name}</div>
+                <div
+                    className={classNames(currentUser.name === p.name ? 'active' : '', 'users-container__user-wrapper')}
+                    key={p.name}
+                >
+                    <span className="users-container__user-name">{p.name}</span>
+                </div>
             ))}
         </div>
     );
@@ -14,7 +21,8 @@ const TeamContainer = ({ teamName, items }) => {
 
 TeamContainer.propTypes = {
     teamName: PropTypes.string.isRequired,
-    items: PropTypes.array.isRequired
+    items: PropTypes.array.isRequired,
+    currentUser: PropTypes.object
 };
 
 export default TeamContainer;

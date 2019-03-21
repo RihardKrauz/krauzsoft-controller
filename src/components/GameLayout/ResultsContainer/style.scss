@@ -1,0 +1,15 @@
+.results-container__title {
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.game-result-item {
+    display: flex;
+    flex-flow: column;
+    padding: 6px;
+
+    &__time {
+        font-size: 10px;
+        color: #999;
+    }
+}

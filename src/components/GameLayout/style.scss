@@ -1,0 +1,71 @@
+.stage-container {
+    display: flex;
+    flex-flow: row;
+    justify-content: space-evenly;
+
+    &__action-panel {
+        display: flex;
+        flex-flow: column;
+    }
+
+    &__action-btn {
+        padding: 2em;
+        border-radius: 80px;
+    }
+
+    &__action-btn.inactive {
+        background-color: #eee;
+        border: solid 1px #e0e0e0;
+    }
+
+    &__action-btn.active {
+        background-color: #e7f1fb;
+        border: solid 1px #c8e1f1;
+    }
+
+    &__action-wrapper {
+        margin-bottom: 1em;
+    }
+
+    &__user-answering {
+        font-size: 12px;
+        color: #999;
+    }
+
+    &__user-answering-value {
+        font-weight: bold;
+        color: black;
+    }
+
+    &__user-answering-team {
+        color: black;
+        font-weight: bold;
+        font-size: 16px;
+        margin-left:0.2em;
+        margin-right:0.2em;
+    }
+}
+
+.log-layout {
+    margin-top: 1em;
+    margin-bottom: 1em;
+}
+
+.game-panel__teams-info {
+    display: flex;
+    flex-flow: column;
+    width: 100%;
+}
+
+.game-panel__teams {
+    display: flex;
+    flex-flow: row;
+    justify-content: space-evenly;
+}
+
+
+.game-panel__creator {
+    font-size: 20px;
+    margin-bottom: 0.5em;
+    padding-bottom: 0.2em;
+}
