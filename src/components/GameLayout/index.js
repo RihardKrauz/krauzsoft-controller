@@ -29,6 +29,7 @@ const ACTION_TYPES = Object.freeze({
     success: 't3'
 });
 
+// todo: convert team1,2,3 into array
 class GameLayout extends React.Component {
     constructor(props) {
         super(props);
