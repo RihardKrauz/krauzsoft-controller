@@ -49,7 +49,8 @@ class GameLayout extends React.Component {
             lastActionType: '',
             falshStart: [],
             shouldAnswer: [],
-            actionBtnHovered: false
+            actionBtnHovered: false,
+            isAnswerAccepted: false
         };
 
         this.unsubscribeSessionStorage = null;
@@ -81,6 +82,37 @@ class GameLayout extends React.Component {
                         const resultMessage =
                             sessionData.lastActionType === ACTION_TYPES.error ? 'слишком поспешил' : 'готов отвечать';
                         this.logString(`${sessionData.lastActionUser.name} ${resultMessage}`);
+
+                        if (sessionData.lastActionType !== ACTION_TYPES.error && this.state.isAnswerAccepted === false) {
+                            this.setState({isAnswerAccepted: true});
+                            if (this.isCurrentUserAdmin() === true) {
+                                this.props.firebase.updateApproved(this.props.match.params.id, sessionData)
+                                    .then(() => {
+                                        setTimeout(() => {
+                                            this.props.firebase.getSession(this.props.match.params.id).then((snap) => {
+                                                console.log(snap.data(), sessionData.shouldAnswer);
+                                                const snapData = snap.data();
+                                                const snapShouldAnswer = [...snapData.shouldAnswer.map(u => { u.adminTime = new Date(); return u; }), ...sessionData.shouldAnswer.map(u => {u.adminTime = new Date(); return u;})];
+
+                                                this.props.firebase.updateSession(this.props.match.params.id, { shouldAnswer: snapShouldAnswer })
+                                                .then(() => {
+                                                    console.log('updating admin data', snapData.shouldAnswer, snapShouldAnswer);
+                                                })
+                                                .catch((err) => {
+                                                    console.error(err);
+                                                    this.props.enqueueSnackbar(err, { variant: 'error' });
+                                                });
+                                                // const answeres = sessionData.shouldAnswer || [];
+                                                // answeres.push(sessionData.)
+                                            });
+                                        }, 1000);
+                                    })
+                                    .catch(err => {
+                                        console.error(err);
+                                        this.props.enqueueSnackbar(err, { variant: 'error' });
+                                    });
+                            }
+                        }
                     }
 
                     if (sessionData.lastActionType === ACTION_TYPES.admin) {
@@ -112,7 +144,7 @@ class GameLayout extends React.Component {
     }
 
     getFirstAnsweredUser() {
-        return this.state.shouldAnswer.sort((a, b) => a.time.seconds - b.time.seconds)[0] || { name: 'пока никто' };
+        return this.state.shouldAnswer[0] || { name: 'пока никто' }; // .sort((a, b) => a.time.seconds - b.time.seconds)[0] || { name: 'пока никто' };
     }
 
     setActionBtnHoverEnabled() {
@@ -143,6 +175,15 @@ class GameLayout extends React.Component {
                 sessionData.falshStart = [];
                 sessionData.shouldAnswer = [];
             }
+
+            this.setState({isAnswerAccepted: false});
+
+            this.props.firebase.updateApproved(this.props.match.params.id, {shouldAnswer: []}).then((snap) => {
+                console.log('approved updated');
+            }).catch(err => {
+                console.error(err);
+                this.props.enqueueSnackbar(err, { variant: 'error' });
+            });
 
             this.props.firebase.updateSession(this.props.match.params.id, sessionData).catch(err => {
                 console.error(err);

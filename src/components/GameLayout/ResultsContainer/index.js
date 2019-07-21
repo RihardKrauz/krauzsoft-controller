@@ -12,6 +12,7 @@ const ResultsContainer = ({ title, items }) => {
                     <div className="game-result-item" key={idx}>
                         <span className="game-result-item__title">{u.name}</span>{' '}
                         <span className="game-result-item__time">{dayjs(u.time.toDate()).format('HH:mm:ss')}</span>
+                         {(false && u.adminTime && (<span className="game-result-item__time">{dayjs(u.adminTime.toDate()).format('HH:mm:ss')}</span>))}
                     </div>
                 ))}
             </div>

@@ -35,6 +35,22 @@ export default class Firebase {
 
     refSession = sessionId => this.store.collection('sessions').doc(sessionId);
 
+    addApproved = () => this.store.collection('approved').add({});
+
+    updateApproved = (sessionId, data) =>
+        this.store
+            .collection('approved')
+            .doc(sessionId)
+            .set(data, { merge: true });
+
+    getApproved = sessionId =>
+        this.store
+            .collection('approved')
+            .doc(sessionId)
+            .get();
+
+    refApproved = sessionId => this.store.collection('approved').doc(sessionId);
+
     getSecurityKey = pass =>
         this.store
             .collection('admin')
