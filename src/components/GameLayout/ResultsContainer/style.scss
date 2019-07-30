@@ -13,3 +13,8 @@
         color: #999;
     }
 }
+
+.results-container__content {
+    max-height: 10em;
+    overflow-y: scroll;
+}

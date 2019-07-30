@@ -26,6 +26,7 @@ const UserCreatingForm = ({
     handleSuccess,
     setNewUserNameAction,
     setNewUserTeamAction,
+    setNewUserPassAction,
     userTeamValue,
     isSuccessEnabled
 }) => {
@@ -59,6 +60,16 @@ const UserCreatingForm = ({
                             required
                         />
                     </FormControl>
+                    <FormControl className="user-creating-form__field">
+                        <TextField
+                            id="user-pass-input"
+                            label="Пароль"
+                            className="user-creating-form__field-input"
+                            onChange={setNewUserPassAction}
+                            margin="normal"
+                            required
+                        />
+                    </FormControl>
                 </form>
             </DialogContent>
             <DialogActions>
@@ -76,6 +87,7 @@ const UserCreatingForm = ({
 UserCreatingForm.propTypes = {
     setNewUserNameAction: PropTypes.func,
     setNewUserTeamAction: PropTypes.func,
+    setNewUserPassAction: PropTypes.func,
     userTeamValue: PropTypes.string.isRequired,
     isOpened: PropTypes.bool,
     handleCancel: PropTypes.func,

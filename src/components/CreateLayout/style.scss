@@ -30,6 +30,15 @@
         display: inline-block;
     }
 
+    &__field-input {
+        min-width: 16em !important;
+    }
+
+    &__select {
+        display: flex;
+        margin-top: 1em;
+    }
+
     @media all and (min-width:0px) and (max-width: 370px) {
         &__action-wrapper {
 
@@ -37,5 +46,15 @@
 
         }
       }
+}
+
+.select { 
+    &__input-label {
+        margin: 0.5em 2em 0 3.5em;
+    } 
+    
+    &__select-input {
+        min-width: 10.8em;
+    }
 }
 

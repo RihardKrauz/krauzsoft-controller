@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import UserCreatingForm, { TEAM_KEYS } from './UserCreatingForm';
+import ChangeUserForm from './ChangeUserForm';
 import TeamMemberList from './TeamMemberList';
 import UserOperationForm from './UserOperationForm';
 
@@ -29,13 +30,16 @@ class LobbyLayout extends React.Component {
             team1Name: 'Команда 1',
             team2Name: 'Команда 2',
             team3Name: 'Команда 3',
-            currentUser: { name: '' },
+            currentUser: { name: '', pass: '' },
             isNewUserPanelVisible: false,
             isOperationFormVisible: false,
-            operatingFormUser: { name: '' },
+            isChangeUserFormVisible: false,
+            operatingFormUser: { name: '', pass: '' },
+            changeUserFormData: { pass: '', comparableUser: { pass: '' } },
             isLoading: true,
             newUser: {
                 name: '',
+                pass: '',
                 team: TEAM_KEYS.team1
             },
             adminHackCount: 0
@@ -46,6 +50,7 @@ class LobbyLayout extends React.Component {
         this.setCurrentUser = this.setCurrentUser.bind(this);
         this.joinGame = this.joinGame.bind(this);
         this.setNewUserName = this.setNewUserName.bind(this);
+        this.setNewUserPass = this.setNewUserPass.bind(this);
         this.setNewUserTeam = this.setNewUserTeam.bind(this);
         this.addNewUser = this.addNewUser.bind(this);
         this.setTeamName = this.setTeamName.bind(this);
@@ -61,10 +66,13 @@ class LobbyLayout extends React.Component {
         this.onSelectUserAction = this.onSelectUserAction.bind(this);
         this.isCurrentUserExistsInTeams = this.isCurrentUserExistsInTeams.bind(this);
         this.setAdmin = this.setAdmin.bind(this);
+        this.setCompareUserPass = this.setCompareUserPass.bind(this);
+        this.onSuccessChangeUserForm = this.onSuccessChangeUserForm.bind(this);
+        this.onCloseChangeUserForm = this.onCloseChangeUserForm.bind(this);
     }
 
     componentDidMount() {
-        this.setState({ currentUser: storage.get(STORAGE_KEYS.currentUser) || { name: '' } });
+        this.setState({ currentUser: storage.get(STORAGE_KEYS.currentUser) || { name: '', pass: '' } });
         try {
             this.unsubscribeSessionStorage = this.props.firebase
                 .refSession(this.props.match.params.id)
@@ -96,7 +104,10 @@ class LobbyLayout extends React.Component {
         if (this.state.admin.name === this.state.currentUser.name) {
             this.setState({ isOperationFormVisible: true, operatingFormUser: user });
         } else {
-            this.setCurrentUser(user);
+            this.setState({
+                isChangeUserFormVisible: true,
+                changeUserFormData: { ...this.state.changeUserFormData, comparableUser: user }
+            });
         }
     }
 
@@ -114,8 +125,16 @@ class LobbyLayout extends React.Component {
         this.setState({ newUser: { ...this.state.newUser, name: e.target.value } });
     }
 
+    setNewUserPass(e) {
+        this.setState({ newUser: { ...this.state.newUser, pass: e.target.value } });
+    }
+
     setNewUserTeam(e) {
         this.setState({ newUser: { ...this.state.newUser, team: e.target.value } });
+    }
+
+    setCompareUserPass(e) {
+        this.setState({ changeUserFormData: { ...this.state.changeUserFormData, pass: e.target.value } });
     }
 
     setTeamForUser(
@@ -156,7 +175,7 @@ class LobbyLayout extends React.Component {
     }
 
     addNewUser() {
-        const newUser = { name: this.state.newUser.name };
+        const newUser = { name: this.state.newUser.name, pass: this.state.newUser.pass };
         this.setTeamForUser(this.state.newUser.team, newUser);
         this.toggleUserCreatingContainer();
         this.setCurrentUser(newUser);
@@ -167,7 +186,7 @@ class LobbyLayout extends React.Component {
     }
 
     onOperationFormCloseHandler() {
-        this.setState({ isOperationFormVisible: false, operatingFormUser: { user: '' } });
+        this.setState({ isOperationFormVisible: false, operatingFormUser: { user: '', pass: '' } });
     }
 
     removeUserFromTeam(team, user) {
@@ -214,6 +233,20 @@ class LobbyLayout extends React.Component {
 
     onCloseUserCreatingForm() {
         this.setState({ isNewUserPanelVisible: false });
+    }
+
+    onSuccessChangeUserForm() {
+        const { pass, comparableUser } = this.state.changeUserFormData;
+        if (pass === comparableUser.pass) {
+            this.setCurrentUser(comparableUser);
+        } else {
+            this.props.enqueueSnackbar('Не правильный пароль!', { variant: 'error' });
+        }
+        this.setState({ isChangeUserFormVisible: false });
+    }
+
+    onCloseChangeUserForm() {
+        this.setState({ isChangeUserFormVisible: false });
     }
 
     render() {
@@ -278,12 +311,24 @@ class LobbyLayout extends React.Component {
                         >
                             <UserCreatingForm
                                 setNewUserNameAction={this.setNewUserName}
+                                setNewUserPassAction={this.setNewUserPass}
                                 setNewUserTeamAction={this.setNewUserTeam}
                                 isOpened={this.state.isNewUserPanelVisible}
                                 handleSuccess={this.onSuccessUserCreatingForm}
-                                isSuccessEnabled={this.state.newUser.name !== ''}
+                                isSuccessEnabled={this.state.newUser.name !== '' && this.state.newUser.pass !== ''}
                                 handleCancel={this.onCloseUserCreatingForm}
                                 userTeamValue={this.state.newUser.team}
+                            />
+                        </div>
+                        <div
+                            className="user-changing-form-panel"
+                            style={{ display: this.state.isChangeUserFormVisible === true ? 'block' : 'none' }}
+                        >
+                            <ChangeUserForm
+                                setNewUserPassAction={this.setCompareUserPass}
+                                isOpened={this.state.isChangeUserFormVisible}
+                                handleSuccess={this.onSuccessChangeUserForm}
+                                handleCancel={this.onCloseChangeUserForm}
                             />
                         </div>
                         <UserOperationForm

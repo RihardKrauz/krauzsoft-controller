@@ -7,8 +7,16 @@ import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
+import MenuItem from '@material-ui/core/MenuItem';
+import InputLabel from '@material-ui/core/InputLabel';
+import Select from '@material-ui/core/Select';
 import { SnackbarProvider, withSnackbar } from 'notistack';
 import './style.scss';
+
+const GAME_MODE = Object.freeze({
+    captain: 'captain',
+    democratic: 'democratic'
+});
 
 class CreateLayout extends React.Component {
     constructor(props) {
@@ -16,12 +24,14 @@ class CreateLayout extends React.Component {
 
         this.state = {
             newSessionId: 'Загрузка...',
-            currentUser: { name: '' }
+            currentUser: { name: '' },
+            gameMode: GAME_MODE.captain
         };
 
         this.copySessionId = this.copySessionId.bind(this);
         this.joinLobby = this.joinLobby.bind(this);
         this.changeCurrentUser = this.changeCurrentUser.bind(this);
+        this.changeMode = this.changeMode.bind(this);
     }
 
     componentDidMount() {
@@ -67,7 +77,8 @@ class CreateLayout extends React.Component {
         this.props.firebase
             .updateSession(this.state.newSessionId, {
                 admin: this.state.currentUser,
-                stage: 0
+                stage: 0,
+                mode: this.state.gameMode
             })
             .then(() => {
                 this.props.dispatch(setCurrentUser(this.state.currentUser));
@@ -81,6 +92,10 @@ class CreateLayout extends React.Component {
 
     changeCurrentUser(e) {
         this.setState({ currentUser: { name: e.target.value } });
+    }
+
+    changeMode(e) {
+        this.setState({ gameMode: e.target.value });
     }
 
     render() {
@@ -103,13 +118,32 @@ class CreateLayout extends React.Component {
                             </div>
                         </div>
                         <div className="creating-form">
-                            <TextField
-                                id="admin-name-input"
-                                label="Ваше имя"
-                                className="creating-form__field-input"
-                                onChange={this.changeCurrentUser}
-                                margin="normal"
-                            />
+                            <div className="creating-form__input">
+                                <TextField
+                                    id="admin-name-input"
+                                    label="Ваше имя"
+                                    className="creating-form__field-input"
+                                    onChange={this.changeCurrentUser}
+                                    margin="normal"
+                                />
+                            </div>
+                            <div className="creating-form__select">
+                                <InputLabel htmlFor="mode-select-el" className="select__input-label">
+                                    Режим
+                                </InputLabel>
+                                <Select
+                                    onChange={this.changeMode}
+                                    value={this.state.gameMode}
+                                    className="select__select-input"
+                                    inputProps={{
+                                        name: 'mode',
+                                        id: 'mode-select-el'
+                                    }}
+                                >
+                                    <MenuItem value={GAME_MODE.captain}>Капитанский</MenuItem>
+                                    <MenuItem value={GAME_MODE.democratic}>Демократический</MenuItem>
+                                </Select>
+                            </div>
                             <div className="creating-form__action-wrapper">
                                 <Button
                                     variant="outlined"
