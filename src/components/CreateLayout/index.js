@@ -10,6 +10,7 @@ import CardContent from '@material-ui/core/CardContent';
 import MenuItem from '@material-ui/core/MenuItem';
 import InputLabel from '@material-ui/core/InputLabel';
 import Select from '@material-ui/core/Select';
+import Checkbox from '@material-ui/core/Checkbox';
 import { SnackbarProvider, withSnackbar } from 'notistack';
 import './style.scss';
 
@@ -25,13 +26,15 @@ class CreateLayout extends React.Component {
         this.state = {
             newSessionId: 'Загрузка...',
             currentUser: { name: '' },
-            gameMode: GAME_MODE.captain
+            gameMode: GAME_MODE.captain,
+            orderByTime: false
         };
 
         this.copySessionId = this.copySessionId.bind(this);
         this.joinLobby = this.joinLobby.bind(this);
         this.changeCurrentUser = this.changeCurrentUser.bind(this);
         this.changeMode = this.changeMode.bind(this);
+        this.changeOrderByTime = this.changeOrderByTime.bind(this);
     }
 
     componentDidMount() {
@@ -78,7 +81,8 @@ class CreateLayout extends React.Component {
             .updateSession(this.state.newSessionId, {
                 admin: this.state.currentUser,
                 stage: 0,
-                mode: this.state.gameMode
+                mode: this.state.gameMode,
+                orderByTime: this.state.orderByTime
             })
             .then(() => {
                 this.props.dispatch(setCurrentUser(this.state.currentUser));
@@ -96,6 +100,10 @@ class CreateLayout extends React.Component {
 
     changeMode(e) {
         this.setState({ gameMode: e.target.value });
+    }
+
+    changeOrderByTime(e) {
+        this.setState({ orderByTime: e.target.checked });
     }
 
     render() {
@@ -143,6 +151,16 @@ class CreateLayout extends React.Component {
                                     <MenuItem value={GAME_MODE.captain}>Капитанский</MenuItem>
                                     <MenuItem value={GAME_MODE.democratic}>Демократический</MenuItem>
                                 </Select>
+                            </div>
+                            <div className="creating-form__checkbox">
+                                <InputLabel htmlFor="mode-select-el" className="select__input-label select-checkbox">
+                                    Сортировка по времени
+                                </InputLabel>
+                                <Checkbox
+                                    checked={this.state.orderByTime}
+                                    onChange={this.changeOrderByTime}
+                                    color="primary"
+                                />
                             </div>
                             <div className="creating-form__action-wrapper">
                                 <Button

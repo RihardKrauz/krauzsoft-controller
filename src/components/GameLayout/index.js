@@ -55,6 +55,8 @@ class GameLayout extends React.Component {
             lastActionType: '',
             falshStart: [],
             shouldAnswer: [],
+            enabledAt: null,
+            orderByTime: false,
             actionBtnHovered: false,
             isAnswerAccepted: false,
             unsubscribeSessionStorage: null,
@@ -122,14 +124,17 @@ class GameLayout extends React.Component {
                                                     .then(snap => {
                                                         console.log('got session');
                                                         const snapData = snap.data();
+
                                                         const snapShouldAnswer = [
-                                                            ...snapData.shouldAnswer.map(u => {
-                                                                u.adminTime = new Date();
-                                                                return u;
-                                                            }),
-                                                            ...sessionData.shouldAnswer.map(u => {
-                                                                u.adminTime = new Date();
-                                                                return u;
+                                                            ...snapData.shouldAnswer,
+                                                            ...sessionData.shouldAnswer.filter(s => {
+                                                                if (snapData.shouldAnswer.length > 0) {
+                                                                    return (
+                                                                        s.name !== snapData.shouldAnswer[0].name &&
+                                                                        s.time !== snapData.shouldAnswer[0].time
+                                                                    );
+                                                                }
+                                                                return true;
                                                             })
                                                         ];
 
@@ -156,6 +161,9 @@ class GameLayout extends React.Component {
                         }
 
                         if (sessionData.lastActionType === ACTION_TYPES.admin) {
+                            if (sessionData.stage !== 0) {
+                                this.setState({ enabledAt: new Date() });
+                            }
                             this.logString(
                                 sessionData.stage === 0
                                     ? `Внимательно слушаем вопрос от ${this.state.admin.name}`
@@ -188,7 +196,11 @@ class GameLayout extends React.Component {
     }
 
     getFirstAnsweredUser() {
-        return this.state.shouldAnswer[0] || { name: 'пока никто' }; // .sort((a, b) => a.time.seconds - b.time.seconds)[0] || { name: 'пока никто' };
+        const firstUser =
+            this.state.orderByTime === false
+                ? this.state.shouldAnswer[0]
+                : this.state.shouldAnswer.sort((a, b) => a.time - b.time)[0];
+        return firstUser || { name: 'пока никто' };
     }
 
     setActionBtnHoverEnabled() {
@@ -277,12 +289,12 @@ class GameLayout extends React.Component {
             if (isFalshed) {
                 sessionData.falshStart = [
                     ...this.state.falshStart,
-                    { name: this.state.currentUser.name, time: new Date() }
+                    { name: this.state.currentUser.name, time: new Date() - this.state.enabledAt }
                 ];
             } else {
                 sessionData.shouldAnswer = [
                     ...this.state.shouldAnswer,
-                    { name: this.state.currentUser.name, time: new Date() }
+                    { name: this.state.currentUser.name, time: new Date() - this.state.enabledAt }
                 ];
             }
             if (this.state.falshStart.filter(u => u.name === this.state.currentUser.name).length === 0) {
@@ -297,8 +309,6 @@ class GameLayout extends React.Component {
     }
 
     render() {
-        console.log(this.state);
-
         let tgdButtonClass = 'tgdk-btn';
         let tgdButtonName = 'ТЫГЫДЫК';
         let tdgButtonStyle = 'primary';
@@ -307,6 +317,8 @@ class GameLayout extends React.Component {
         const isGameInPendingState = this.state.stage === 0;
 
         tdgButtonStyle = isGameInPendingState ? 'secondary' : 'primary';
+
+        // console.log(isCurrentUserAdmin, isGameInPendingState, this.state);
 
         if (isCurrentUserAdmin) {
             tgdButtonName = isGameInPendingState ? 'Жду ответ' : 'Читать вопрос';

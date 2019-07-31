@@ -3,6 +3,7 @@ import dayjs from 'dayjs';
 import PropTypes from 'prop-types';
 import './style.scss';
 
+// dayjs(u.time.toDate()).format('HH:mm:ss')
 const ResultsContainer = ({ title, items }) => {
     return (
         <div className="results-container">
@@ -11,8 +12,12 @@ const ResultsContainer = ({ title, items }) => {
                 {items.map((u, idx) => (
                     <div className="game-result-item" key={idx}>
                         <span className="game-result-item__title">{u.name}</span>{' '}
-                        <span className="game-result-item__time">{dayjs(u.time.toDate()).format('HH:mm:ss')}</span>
-                         {(false && u.adminTime && (<span className="game-result-item__time">{dayjs(u.adminTime.toDate()).format('HH:mm:ss')}</span>))}
+                        <span className="game-result-item__time">{u.time}</span>
+                        {false && u.adminTime && (
+                            <span className="game-result-item__time">
+                                {dayjs(u.adminTime.toDate()).format('HH:mm:ss')}
+                            </span>
+                        )}
                     </div>
                 ))}
             </div>
