@@ -27,7 +27,8 @@ class CreateLayout extends React.Component {
             newSessionId: 'Загрузка...',
             currentUser: { name: '' },
             gameMode: GAME_MODE.captain,
-            orderByTime: false
+            orderByTime: false,
+            conflictDelay: 1000
         };
 
         this.copySessionId = this.copySessionId.bind(this);
@@ -35,6 +36,7 @@ class CreateLayout extends React.Component {
         this.changeCurrentUser = this.changeCurrentUser.bind(this);
         this.changeMode = this.changeMode.bind(this);
         this.changeOrderByTime = this.changeOrderByTime.bind(this);
+        this.changeConflictDelay = this.changeConflictDelay.bind(this);
     }
 
     componentDidMount() {
@@ -82,7 +84,8 @@ class CreateLayout extends React.Component {
                 admin: this.state.currentUser,
                 stage: 0,
                 mode: this.state.gameMode,
-                orderByTime: this.state.orderByTime
+                orderByTime: this.state.orderByTime,
+                conflictDelay: this.state.conflictDelay
             })
             .then(() => {
                 this.props.dispatch(setCurrentUser(this.state.currentUser));
@@ -104,6 +107,11 @@ class CreateLayout extends React.Component {
 
     changeOrderByTime(e) {
         this.setState({ orderByTime: e.target.checked });
+    }
+
+    changeConflictDelay(e) {
+        const value = isNaN(Number(e.target.value)) ? 1000 : Number(e.target.value);
+        this.setState({ conflictDelay: value });
     }
 
     render() {
@@ -135,6 +143,16 @@ class CreateLayout extends React.Component {
                                     margin="normal"
                                 />
                             </div>
+                            <div className="creating-form__input">
+                                <TextField
+                                    id="conflict-delay-input"
+                                    label="Задержка конфликта"
+                                    className="creating-form__field-input"
+                                    onChange={this.changeConflictDelay}
+                                    value={this.state.conflictDelay}
+                                    margin="normal"
+                                />
+                            </div>
                             <div className="creating-form__select">
                                 <InputLabel htmlFor="mode-select-el" className="select__input-label">
                                     Режим
@@ -162,6 +180,7 @@ class CreateLayout extends React.Component {
                                     color="primary"
                                 />
                             </div>
+
                             <div className="creating-form__action-wrapper">
                                 <Button
                                     variant="outlined"

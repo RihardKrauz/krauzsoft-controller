@@ -56,6 +56,7 @@ class GameLayout extends React.Component {
             falshStart: [],
             shouldAnswer: [],
             enabledAt: null,
+            conflictDelay: 1000,
             orderByTime: false,
             actionBtnHovered: false,
             isAnswerAccepted: false,
@@ -118,39 +119,44 @@ class GameLayout extends React.Component {
                                         .updateApproved(this.props.match.params.id, sessionData)
                                         .then(() => {
                                             console.log('updated approved');
-                                            setTimeout(() => {
-                                                this.props.firebase
-                                                    .getSession(this.props.match.params.id)
-                                                    .then(snap => {
-                                                        console.log('got session');
-                                                        const snapData = snap.data();
+                                            setTimeout(
+                                                () => {
+                                                    this.props.firebase
+                                                        .getSession(this.props.match.params.id)
+                                                        .then(snap => {
+                                                            console.log('got session');
+                                                            const snapData = snap.data();
 
-                                                        const snapShouldAnswer = [
-                                                            ...snapData.shouldAnswer,
-                                                            ...sessionData.shouldAnswer.filter(s => {
-                                                                if (snapData.shouldAnswer.length > 0) {
-                                                                    return (
-                                                                        s.name !== snapData.shouldAnswer[0].name &&
-                                                                        s.time !== snapData.shouldAnswer[0].time
-                                                                    );
-                                                                }
-                                                                return true;
-                                                            })
-                                                        ];
+                                                            const snapShouldAnswer = [
+                                                                ...snapData.shouldAnswer,
+                                                                ...sessionData.shouldAnswer.filter(s => {
+                                                                    if (snapData.shouldAnswer.length > 0) {
+                                                                        return (
+                                                                            s.name !== snapData.shouldAnswer[0].name &&
+                                                                            s.time !== snapData.shouldAnswer[0].time
+                                                                        );
+                                                                    }
+                                                                    return true;
+                                                                })
+                                                            ];
 
-                                                        this.props.firebase
-                                                            .updateSession(this.props.match.params.id, {
-                                                                shouldAnswer: snapShouldAnswer
-                                                            })
-                                                            .then(() => {
-                                                                console.log('update session');
-                                                            })
-                                                            .catch(err => {
-                                                                console.error(err);
-                                                                this.props.enqueueSnackbar(err, { variant: 'error' });
-                                                            });
-                                                    });
-                                            }, CONFLICT_DELAY);
+                                                            this.props.firebase
+                                                                .updateSession(this.props.match.params.id, {
+                                                                    shouldAnswer: snapShouldAnswer
+                                                                })
+                                                                .then(() => {
+                                                                    console.log('update session');
+                                                                })
+                                                                .catch(err => {
+                                                                    console.error(err);
+                                                                    this.props.enqueueSnackbar(err, {
+                                                                        variant: 'error'
+                                                                    });
+                                                                });
+                                                        });
+                                                },
+                                                this.state.conflictDelay ? this.state.conflictDelay : CONFLICT_DELAY
+                                            );
                                         })
                                         .catch(err => {
                                             console.error(err);
