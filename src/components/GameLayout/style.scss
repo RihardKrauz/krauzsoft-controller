@@ -72,6 +72,16 @@
 
 .tgdk-btn {
     min-width: 170px !important; 
+
+    &.inactive-ready {
+        background-color: yellow;
+        color: black;
+    }
+
+    &.inactive-pending {
+        background-color: white;
+    }
+
 }
 
 

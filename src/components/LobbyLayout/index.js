@@ -4,6 +4,7 @@ import UserCreatingForm, { TEAM_KEYS } from './UserCreatingForm';
 import ChangeUserForm from './ChangeUserForm';
 import TeamMemberList from './TeamMemberList';
 import UserOperationForm from './UserOperationForm';
+import { GAME_MODE } from '../CreateLayout';
 
 import { connect } from 'react-redux';
 import { setCurrentUser } from '../../store/session/session.actions';
@@ -30,17 +31,19 @@ class LobbyLayout extends React.Component {
             team1Name: 'Команда 1',
             team2Name: 'Команда 2',
             team3Name: 'Команда 3',
-            currentUser: { name: '', pass: '' },
+            currentUser: { name: '', pass: '', isCaptain: false },
+            mode: '',
             isNewUserPanelVisible: false,
             isOperationFormVisible: false,
             isChangeUserFormVisible: false,
-            operatingFormUser: { name: '', pass: '' },
+            operatingFormUser: { name: '', pass: '', isCaptain: false },
             changeUserFormData: { pass: '', comparableUser: { pass: '' } },
             isLoading: true,
             newUser: {
                 name: '',
                 pass: '',
-                team: TEAM_KEYS.team1
+                team: TEAM_KEYS.team1,
+                isCaptain: false
             },
             adminHackCount: 0
         };
@@ -69,10 +72,14 @@ class LobbyLayout extends React.Component {
         this.setCompareUserPass = this.setCompareUserPass.bind(this);
         this.onSuccessChangeUserForm = this.onSuccessChangeUserForm.bind(this);
         this.onCloseChangeUserForm = this.onCloseChangeUserForm.bind(this);
+        this.onSetCaptainHandler = this.onSetCaptainHandler.bind(this);
+        this.isEveryTeamHasCaptain = this.isEveryTeamHasCaptain.bind(this);
     }
 
     componentDidMount() {
-        this.setState({ currentUser: storage.get(STORAGE_KEYS.currentUser) || { name: '', pass: '' } });
+        this.setState({
+            currentUser: storage.get(STORAGE_KEYS.currentUser) || { name: '', pass: '', isCaptain: false }
+        });
         try {
             this.unsubscribeSessionStorage = this.props.firebase
                 .refSession(this.props.match.params.id)
@@ -175,7 +182,7 @@ class LobbyLayout extends React.Component {
     }
 
     addNewUser() {
-        const newUser = { name: this.state.newUser.name, pass: this.state.newUser.pass };
+        const newUser = { name: this.state.newUser.name, pass: this.state.newUser.pass, isCaptain: false };
         this.setTeamForUser(this.state.newUser.team, newUser);
         this.toggleUserCreatingContainer();
         this.setCurrentUser(newUser);
@@ -186,11 +193,52 @@ class LobbyLayout extends React.Component {
     }
 
     onOperationFormCloseHandler() {
-        this.setState({ isOperationFormVisible: false, operatingFormUser: { user: '', pass: '' } });
+        this.setState({ isOperationFormVisible: false, operatingFormUser: { user: '', pass: '', isCaptain: false } });
     }
 
     removeUserFromTeam(team, user) {
         return team.filter(u => u.name !== user.name);
+    }
+
+    onSetCaptainHandler() {
+        const operatingUser = this.state.operatingFormUser;
+
+        let { team1, team2, team3 } = this.state;
+
+        const setUserAsCaptainForTeam = (team, user) => {
+            let result = team;
+            const isOperatingUserInTeam = team.filter(t => t.name === user.name).length > 0;
+            if (isOperatingUserInTeam) {
+                result = team
+                    .map(u => ({ ...u, isCaptain: false }))
+                    .map(u => {
+                        if (u.name === user.name) {
+                            u.isCaptain = true;
+                        }
+                        return u;
+                    });
+            }
+            return result;
+        };
+
+        team1 = setUserAsCaptainForTeam(team1, operatingUser);
+        team2 = setUserAsCaptainForTeam(team2, operatingUser);
+        team3 = setUserAsCaptainForTeam(team3, operatingUser);
+
+        this.props.firebase.updateSession(this.props.match.params.id, { team1, team2, team3 }).catch(err => {
+            console.error(err);
+            this.props.enqueueSnackbar(err, { variant: 'error' });
+        });
+
+        this.onOperationFormCloseHandler();
+    }
+
+    isEveryTeamHasCaptain() {
+        const team1HasCaptain = this.state.team1.filter(u => u.isCaptain === true).length > 0;
+        const team2HasCaptain = this.state.team2.filter(u => u.isCaptain === true).length > 0;
+        const team3HasCaptain = this.state.team3.filter(u => u.isCaptain === true).length > 0;
+
+        return team1HasCaptain && team2HasCaptain && team3HasCaptain;
     }
 
     onChangeUserTeamHandler(newTeam) {
@@ -257,6 +305,11 @@ class LobbyLayout extends React.Component {
                 </div>
             );
         }
+
+        const notReadyToStart =
+            this.state.currentUser.name === '' ||
+            !this.isCurrentUserExistsInTeams() ||
+            (this.state.mode === GAME_MODE.captain && this.isEveryTeamHasCaptain() === false);
 
         return this.state.admin.name === '' ? (
             <div>
@@ -334,6 +387,7 @@ class LobbyLayout extends React.Component {
                         <UserOperationForm
                             isOpened={this.state.isOperationFormVisible}
                             handleOk={this.onOperationFormCloseHandler}
+                            setCaptainHandler={this.onSetCaptainHandler}
                             changeTeamHandler={this.onChangeUserTeamHandler}
                             removeUserHandler={this.onRemoveUserHandler}
                         />
@@ -353,7 +407,7 @@ class LobbyLayout extends React.Component {
                         variant="outlined"
                         color="primary"
                         className="user-creating-form__action-btn"
-                        disabled={this.state.currentUser.name === '' || !this.isCurrentUserExistsInTeams()}
+                        disabled={notReadyToStart}
                         onClick={this.joinGame}
                     >
                         К игре

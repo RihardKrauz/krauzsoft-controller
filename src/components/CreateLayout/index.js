@@ -13,7 +13,7 @@ import Select from '@material-ui/core/Select';
 import { SnackbarProvider, withSnackbar } from 'notistack';
 import './style.scss';
 
-const GAME_MODE = Object.freeze({
+export const GAME_MODE = Object.freeze({
     captain: 'captain',
     democratic: 'democratic'
 });

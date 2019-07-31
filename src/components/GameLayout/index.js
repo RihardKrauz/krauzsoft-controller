@@ -7,6 +7,7 @@ import dayjs from 'dayjs';
 import Logger from './Logger';
 import ResultsContainer from './ResultsContainer';
 import TeamContainer from './TeamContainer';
+import { GAME_MODE } from '../CreateLayout';
 
 import ExpansionPanel from '@material-ui/core/ExpansionPanel';
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
@@ -23,11 +24,15 @@ import { SnackbarProvider, withSnackbar } from 'notistack';
 
 import './style.scss';
 
+// export type VariantType = 'default' | 'error' | 'success' | 'warning' | 'info';
+
 const ACTION_TYPES = Object.freeze({
     admin: 't1',
     error: 't2',
     success: 't3'
 });
+
+const CONFLICT_DELAY = 1000;
 
 // todo: convert team1,2,3 into array
 class GameLayout extends React.Component {
@@ -43,6 +48,7 @@ class GameLayout extends React.Component {
             team2Name: 'Команда 2',
             team3Name: 'Команда 3',
             stage: 0,
+            mode: '',
             log: [],
             currentUser: { name: '' },
             lastActionUser: { name: '' },
@@ -50,16 +56,19 @@ class GameLayout extends React.Component {
             falshStart: [],
             shouldAnswer: [],
             actionBtnHovered: false,
-            isAnswerAccepted: false
+            isAnswerAccepted: false,
+            unsubscribeSessionStorage: null,
+            unsubscribeChatStorage: null
         };
 
-        this.unsubscribeSessionStorage = null;
         this.logString = this.logString.bind(this);
         this.onTygydyk = this.onTygydyk.bind(this);
         this.isCurrentUserAdmin = this.isCurrentUserAdmin.bind(this);
         this.setActionBtnHoverEnabled = this.setActionBtnHoverEnabled.bind(this);
         this.setActionBtnHoverDisabled = this.setActionBtnHoverDisabled.bind(this);
         this.getTeamByUser = this.getTeamByUser.bind(this);
+        this.isThisUserCaptain = this.isThisUserCaptain.bind(this);
+        this.getThisUserTeamCaptain = this.getThisUserTeamCaptain.bind(this);
     }
 
     componentDidMount() {
@@ -67,82 +76,94 @@ class GameLayout extends React.Component {
         this.logString('Приветствуем тебя, ' + currentUser.name);
         this.setState({ currentUser });
         try {
-            this.unsubscribeSessionStorage = this.props.firebase
-                .refSession(this.props.match.params.id)
-                .onSnapshot(snapshot => {
-                    const sessionData = snapshot.data();
-                    this.setState({
-                        ...sessionData
-                    });
-                    if (
-                        sessionData.lastActionUser &&
-                        sessionData.lastActionType &&
-                        sessionData.lastActionType !== ACTION_TYPES.admin
-                    ) {
-                        const resultMessage =
-                            sessionData.lastActionType === ACTION_TYPES.error ? 'слишком поспешил' : 'готов отвечать';
-                        this.logString(`${sessionData.lastActionUser.name} ${resultMessage}`);
+            this.setState({
+                unsubscribeChatStorage: this.props.firebase.refChat(this.props.match.params.id).onSnapshot(snapshot => {
+                    const chatData = snapshot.data();
+                    if (chatData && chatData.to === currentUser.name) {
+                        this.props.enqueueSnackbar(chatData.message, { variant: 'info' });
+                    }
+                })
+            });
 
+            this.setState({
+                unsubscribeSessionStorage: this.props.firebase
+                    .refSession(this.props.match.params.id)
+                    .onSnapshot(snapshot => {
+                        console.log('got snapshot');
+
+                        const sessionData = snapshot.data();
+                        this.setState({
+                            ...sessionData
+                        });
                         if (
-                            sessionData.lastActionType !== ACTION_TYPES.error &&
-                            this.state.isAnswerAccepted === false
+                            sessionData.lastActionUser &&
+                            sessionData.lastActionType &&
+                            sessionData.lastActionType !== ACTION_TYPES.admin
                         ) {
-                            this.setState({ isAnswerAccepted: true });
-                            if (this.isCurrentUserAdmin() === true) {
-                                this.props.firebase
-                                    .updateApproved(this.props.match.params.id, sessionData)
-                                    .then(() => {
-                                        setTimeout(() => {
-                                            this.props.firebase.getSession(this.props.match.params.id).then(snap => {
-                                                console.log(snap.data(), sessionData.shouldAnswer);
-                                                const snapData = snap.data();
-                                                const snapShouldAnswer = [
-                                                    ...snapData.shouldAnswer.map(u => {
-                                                        u.adminTime = new Date();
-                                                        return u;
-                                                    }),
-                                                    ...sessionData.shouldAnswer.map(u => {
-                                                        u.adminTime = new Date();
-                                                        return u;
-                                                    })
-                                                ];
+                            const resultMessage =
+                                sessionData.lastActionType === ACTION_TYPES.error
+                                    ? 'слишком поспешил'
+                                    : 'готов отвечать';
+                            this.logString(`${sessionData.lastActionUser.name} ${resultMessage}`);
 
+                            if (
+                                sessionData.lastActionType !== ACTION_TYPES.error &&
+                                this.state.isAnswerAccepted === false
+                            ) {
+                                this.setState({ isAnswerAccepted: true });
+                                if (this.isCurrentUserAdmin() === true) {
+                                    this.props.firebase
+                                        .updateApproved(this.props.match.params.id, sessionData)
+                                        .then(() => {
+                                            console.log('updated approved');
+                                            setTimeout(() => {
                                                 this.props.firebase
-                                                    .updateSession(this.props.match.params.id, {
-                                                        shouldAnswer: snapShouldAnswer
-                                                    })
-                                                    .then(() => {
-                                                        console.log(
-                                                            'updating admin data',
-                                                            snapData.shouldAnswer,
-                                                            snapShouldAnswer
-                                                        );
-                                                    })
-                                                    .catch(err => {
-                                                        console.error(err);
-                                                        this.props.enqueueSnackbar(err, { variant: 'error' });
+                                                    .getSession(this.props.match.params.id)
+                                                    .then(snap => {
+                                                        console.log('got session');
+                                                        const snapData = snap.data();
+                                                        const snapShouldAnswer = [
+                                                            ...snapData.shouldAnswer.map(u => {
+                                                                u.adminTime = new Date();
+                                                                return u;
+                                                            }),
+                                                            ...sessionData.shouldAnswer.map(u => {
+                                                                u.adminTime = new Date();
+                                                                return u;
+                                                            })
+                                                        ];
+
+                                                        this.props.firebase
+                                                            .updateSession(this.props.match.params.id, {
+                                                                shouldAnswer: snapShouldAnswer
+                                                            })
+                                                            .then(() => {
+                                                                console.log('update session');
+                                                            })
+                                                            .catch(err => {
+                                                                console.error(err);
+                                                                this.props.enqueueSnackbar(err, { variant: 'error' });
+                                                            });
                                                     });
-                                                // const answeres = sessionData.shouldAnswer || [];
-                                                // answeres.push(sessionData.)
-                                            });
-                                        }, 1000);
-                                    })
-                                    .catch(err => {
-                                        console.error(err);
-                                        this.props.enqueueSnackbar(err, { variant: 'error' });
-                                    });
+                                            }, CONFLICT_DELAY);
+                                        })
+                                        .catch(err => {
+                                            console.error(err);
+                                            this.props.enqueueSnackbar(err, { variant: 'error' });
+                                        });
+                                }
                             }
                         }
-                    }
 
-                    if (sessionData.lastActionType === ACTION_TYPES.admin) {
-                        this.logString(
-                            sessionData.stage === 0
-                                ? `Внимательно слушаем вопрос от ${this.state.admin.name}`
-                                : 'Отвечаем!'
-                        );
-                    }
-                });
+                        if (sessionData.lastActionType === ACTION_TYPES.admin) {
+                            this.logString(
+                                sessionData.stage === 0
+                                    ? `Внимательно слушаем вопрос от ${this.state.admin.name}`
+                                    : 'Отвечаем!'
+                            );
+                        }
+                    })
+            });
         } catch (err) {
             console.error(err);
             this.props.enqueueSnackbar(err, { variant: 'error' });
@@ -150,8 +171,11 @@ class GameLayout extends React.Component {
     }
 
     componentWillUnmount() {
-        if (this.unsubscribeSessionStorage instanceof Function) {
-            this.unsubscribeSessionStorage();
+        if (this.state.unsubscribeSessionStorage instanceof Function) {
+            this.state.unsubscribeSessionStorage();
+        }
+        if (this.state.unsubscribeChatStorage instanceof Function) {
+            this.state.unsubscribeChatStorage();
         }
     }
 
@@ -168,11 +192,11 @@ class GameLayout extends React.Component {
     }
 
     setActionBtnHoverEnabled() {
-        this.setState({ actionBtnHovered: true });
+        // this.setState({ actionBtnHovered: true });
     }
 
     setActionBtnHoverDisabled() {
-        this.setState({ actionBtnHovered: false });
+        // this.setState({ actionBtnHovered: false });
     }
 
     getTeamByUser(user) {
@@ -181,6 +205,29 @@ class GameLayout extends React.Component {
         if (this.state.team2.filter(u => u.name === user.name).length > 0) return this.state.team2Name;
         if (this.state.team3.filter(u => u.name === user.name).length > 0) return this.state.team3Name;
         return '';
+    }
+
+    isThisUserCaptain() {
+        return (
+            [...this.state.team1, ...this.state.team2, ...this.state.team3].filter(
+                u => u.name === this.state.currentUser.name && u.isCaptain === true
+            ).length > 0
+        );
+    }
+
+    getThisUserTeamCaptain() {
+        const getUserCaptain = (team, user) => {
+            if (team.filter(u => u.name === user.name).length > 0) {
+                const cap = team.filter(u => u.isCaptain) || [{ name: '' }];
+                return cap[0];
+            } else return null;
+        };
+
+        const captain =
+            getUserCaptain(this.state.team1, this.state.currentUser) ||
+            getUserCaptain(this.state.team2, this.state.currentUser) ||
+            getUserCaptain(this.state.team2, this.state.currentUser);
+        return captain;
     }
 
     onTygydyk(e) {
@@ -211,6 +258,17 @@ class GameLayout extends React.Component {
                 this.props.enqueueSnackbar(err, { variant: 'error' });
             });
         } else {
+            if (this.state.mode === GAME_MODE.captain && this.isThisUserCaptain() === false) {
+                const captain = this.getThisUserTeamCaptain();
+                this.props.firebase.updateChat(this.props.match.params.id, {
+                    from: this.state.currentUser.name,
+                    to: captain.name,
+                    message: `Вас подбодрил(а) ${this.state.currentUser.name}`,
+                    sendTime: new Date()
+                });
+                return;
+            }
+
             const isFalshed = this.state.stage === 0 ? true : false;
             let sessionData = {
                 lastActionUser: this.state.currentUser,
@@ -239,14 +297,26 @@ class GameLayout extends React.Component {
     }
 
     render() {
-        const firstAnsweredUser = this.getFirstAnsweredUser();
+        console.log(this.state);
+
+        let tgdButtonClass = 'tgdk-btn';
         let tgdButtonName = 'ТЫГЫДЫК';
-        if (this.state.currentUser.name === this.state.admin.name) {
-            tgdButtonName = this.state.stage === 0 ? 'Жду ответ' : 'Читать вопрос';
+        let tdgButtonStyle = 'primary';
+
+        const isCurrentUserAdmin = this.state.currentUser.name === this.state.admin.name;
+        const isGameInPendingState = this.state.stage === 0;
+
+        tdgButtonStyle = isGameInPendingState ? 'secondary' : 'primary';
+
+        if (isCurrentUserAdmin) {
+            tgdButtonName = isGameInPendingState ? 'Жду ответ' : 'Читать вопрос';
+        } else if (this.state.mode === GAME_MODE.captain && this.isThisUserCaptain() === false) {
+            tgdButtonName = 'Поддержать капитана';
+            tgdButtonClass += isGameInPendingState ? ' inactive-pending' : ' inactive-ready';
+            tdgButtonStyle = 'default';
         }
 
-        let tdgButtonStyle = 'primary';
-        tdgButtonStyle = this.state.stage === 0 ? 'secondary' : 'primary';
+        const firstAnsweredUser = this.getFirstAnsweredUser();
 
         return (
             <Card className="card-layout">
@@ -270,10 +340,10 @@ class GameLayout extends React.Component {
                                             onClick={this.onTygydyk}
                                             onMouseOver={this.setActionBtnHoverEnabled}
                                             onMouseOut={this.setActionBtnHoverDisabled}
-                                            className="tgdk-btn"
+                                            className={tgdButtonClass}
                                             color={tdgButtonStyle}
                                         >
-                                            {this.state.actionBtnHovered === true ? (
+                                            {this.state.actionBtnHovered === false ? (
                                                 <ActiveBtnIcon className="tgdk-btn-icon" />
                                             ) : (
                                                 <PassiveBtnIcon className="tgdk-btn-icon" />

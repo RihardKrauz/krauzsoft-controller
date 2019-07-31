@@ -9,7 +9,11 @@ const TeamContainer = ({ teamName, items, currentUser }) => {
             <div className="users-container__header">{teamName}</div>
             {items.map(p => (
                 <div
-                    className={classNames(currentUser.name === p.name ? 'active' : '', 'users-container__user-wrapper')}
+                    className={classNames(
+                        currentUser.name === p.name ? 'active' : '',
+                        p.isCaptain === true ? 'captain' : '',
+                        'users-container__user-wrapper'
+                    )}
                     key={p.name}
                 >
                     <span className="users-container__user-name">{p.name}</span>

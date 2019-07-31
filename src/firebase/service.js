@@ -17,39 +17,29 @@ export default class Firebase {
 
         this.db = app.database();
         this.store = app.firestore();
+
+        this.constructRepository.bind(this)('Session', 'sessions');
+        this.constructRepository.bind(this)('Approved', 'approved');
+        this.constructRepository.bind(this)('Chat', 'chat');
     }
 
-    addSession = () => this.store.collection('sessions').add({});
+    constructRepository = (methodName, tableName) => {
+        this[`add${methodName}`] = () => this.store.collection(tableName).add({});
 
-    updateSession = (sessionId, data) =>
-        this.store
-            .collection('sessions')
-            .doc(sessionId)
-            .set(data, { merge: true });
+        this[`update${methodName}`] = (id, data) =>
+            this.store
+                .collection(tableName)
+                .doc(id)
+                .set(data, { merge: true });
 
-    getSession = sessionId =>
-        this.store
-            .collection('sessions')
-            .doc(sessionId)
-            .get();
+        this[`get${methodName}`] = id =>
+            this.store
+                .collection(tableName)
+                .doc(id)
+                .get();
 
-    refSession = sessionId => this.store.collection('sessions').doc(sessionId);
-
-    addApproved = () => this.store.collection('approved').add({});
-
-    updateApproved = (sessionId, data) =>
-        this.store
-            .collection('approved')
-            .doc(sessionId)
-            .set(data, { merge: true });
-
-    getApproved = sessionId =>
-        this.store
-            .collection('approved')
-            .doc(sessionId)
-            .get();
-
-    refApproved = sessionId => this.store.collection('approved').doc(sessionId);
+        this[`ref${methodName}`] = id => this.store.collection(tableName).doc(id);
+    };
 
     getSecurityKey = pass =>
         this.store

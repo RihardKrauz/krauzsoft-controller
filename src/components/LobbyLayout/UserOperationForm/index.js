@@ -14,7 +14,7 @@ import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 
-const UserOperationForm = ({ isOpened, handleOk, changeTeamHandler, removeUserHandler }) => {
+const UserOperationForm = ({ isOpened, handleOk, changeTeamHandler, removeUserHandler, setCaptainHandler }) => {
     const [userTeam, setUserTeam] = React.useState(TEAM_KEYS.team1);
 
     return (
@@ -56,7 +56,10 @@ const UserOperationForm = ({ isOpened, handleOk, changeTeamHandler, removeUserHa
             </DialogContent>
             <DialogActions>
                 <Button onClick={removeUserHandler} color="secondary">
-                    Удалить игрока
+                    Удалить
+                </Button>
+                <Button onClick={setCaptainHandler} color="default">
+                    Назначить капитаном
                 </Button>
                 <Button onClick={handleOk} color="primary">
                     ОК
@@ -69,6 +72,7 @@ const UserOperationForm = ({ isOpened, handleOk, changeTeamHandler, removeUserHa
 UserOperationForm.propTypes = {
     isOpened: PropTypes.bool,
     handleOk: PropTypes.func,
+    setCaptainHandler: PropTypes.func,
     changeTeamHandler: PropTypes.func,
     removeUserHandler: PropTypes.func
 };

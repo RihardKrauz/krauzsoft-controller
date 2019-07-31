@@ -42,6 +42,7 @@ const TeamMemberList = ({ title, memberList, onSelectUserAction, onChangeTeamNam
                     <div
                         className={classNames(
                             currentUser.name === p.name ? 'active' : '',
+                            p.isCaptain === true ? 'captain' : '',
                             'team-content__user-wrapper'
                         )}
                         key={p.name}
