@@ -120,6 +120,10 @@ class LobbyLayout extends React.Component {
 
     setTeamName(name) {
         return value => {
+            if (this.state.mode === GAME_MODE.captain && this.state.admin.name !== this.state.currentUser.name && this.state.currentUser.isCaptain !== true) {
+                this.props.enqueueSnackbar('Только админ или капитаны могут устанавливать название команды', { variant: 'error' });
+                return;
+            }
             this.setState({ [name]: value });
             this.props.firebase.updateSession(this.props.match.params.id, { [name]: value }).catch(err => {
                 console.error(err);
