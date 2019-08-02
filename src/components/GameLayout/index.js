@@ -127,6 +127,12 @@ class GameLayout extends React.Component {
                                         .updateApproved(this.props.match.params.id, sessionData)
                                         .then(() => {
                                             console.log('updated approved');
+
+                                            if (this.isCurrentUserAdmin()) {
+                                                if (window.navigator) window.navigator.vibrate(200);
+                                                beep();
+                                            }
+
                                             setTimeout(
                                                 () => {
                                                     this.props.firebase
