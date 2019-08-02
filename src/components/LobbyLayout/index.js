@@ -120,7 +120,9 @@ class LobbyLayout extends React.Component {
 
     setTeamName(name) {
         return value => {
-            if (this.state.mode === GAME_MODE.captain && this.state.admin.name !== this.state.currentUser.name && this.state.currentUser.isCaptain !== true) {
+            if (this.state.mode === GAME_MODE.captain 
+                && this.state.admin.name !== this.state.currentUser.name 
+                && this.state.currentUser.isCaptain !== true) {
                 this.props.enqueueSnackbar('Только админ или капитаны могут устанавливать название команды', { variant: 'error' });
                 return;
             }

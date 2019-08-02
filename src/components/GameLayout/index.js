@@ -83,6 +83,7 @@ class GameLayout extends React.Component {
                 unsubscribeChatStorage: this.props.firebase.refChat(this.props.match.params.id).onSnapshot(snapshot => {
                     const chatData = snapshot.data();
                     if (chatData && chatData.to === currentUser.name) {
+                        if (window.navigator) window.navigator.vibrate(200);
                         this.props.enqueueSnackbar(chatData.message, { variant: 'info' });
                     }
                 })
@@ -175,6 +176,9 @@ class GameLayout extends React.Component {
                                     ? `Внимательно слушаем вопрос от ${this.state.admin.name}`
                                     : 'Отвечаем!'
                             );
+                            if (this.isThisUserCaptain()) {
+                                if (window.navigator) window.navigator.vibrate(200);
+                            }
                         }
                     })
             });
